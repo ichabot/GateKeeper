@@ -132,11 +132,9 @@ function initSignaturePad() {
 
             // Block check-in if any health question answered "yes"
             var healthBlocked = false;
-            for (var qi = 1; qi <= 6; qi++) {
-                if (document.querySelector('input[name="q' + qi + '"][value="yes"]:checked')) {
-                    healthBlocked = true;
-                    break;
-                }
+            var yesChecked = document.querySelectorAll('input[name^="hq_"][value="yes"]:checked');
+            if (yesChecked.length > 0) {
+                healthBlocked = true;
             }
             if (healthBlocked) {
                 var hwModal = document.getElementById('healthWarningModal');
@@ -249,10 +247,11 @@ function saveCheckinDraft() {
         var el = document.getElementById(id);
         if (el) data[id] = el.value;
     });
-    for (var i = 1; i <= 6; i++) {
-        var checked = document.querySelector('input[name="q' + i + '"]:checked');
-        data['q' + i] = checked ? checked.value : '';
-    }
+    // Save dynamic health question answers (hq_*)
+    var hqRadios = form.querySelectorAll('input[name^="hq_"]:checked');
+    hqRadios.forEach(function (radio) {
+        data[radio.name] = radio.value;
+    });
     ['dsgvo_consent', 'hygiene_consent', 'safety_consent'].forEach(function (id) {
         var el = document.getElementById(id);
         if (el) data[id] = el.checked;
@@ -271,12 +270,13 @@ function restoreCheckinDraft() {
             var el = document.getElementById(id);
             if (el && data[id]) el.value = data[id];
         });
-        for (var i = 1; i <= 6; i++) {
-            if (data['q' + i]) {
-                var radio = document.querySelector('input[name="q' + i + '"][value="' + data['q' + i] + '"]');
+        // Restore dynamic health question answers (hq_*)
+        Object.keys(data).forEach(function (key) {
+            if (key.indexOf('hq_') === 0 && data[key]) {
+                var radio = document.querySelector('input[name="' + key + '"][value="' + data[key] + '"]');
                 if (radio) radio.checked = true;
             }
-        }
+        });
         ['dsgvo_consent', 'hygiene_consent', 'safety_consent'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) el.checked = !!data[id];

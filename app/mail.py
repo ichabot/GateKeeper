@@ -95,7 +95,7 @@ def send_emergency_report(settings) -> tuple[bool, str | None]:
 
 def build_monthly_csv(year: int, month: int) -> tuple[str, int]:
     """Return (csv_string, visitor_count) for the given year/month."""
-    from app.models import Visitor  # lazy import avoids circular dependency
+    from app.models import HealthQuestion, Visitor  # lazy import avoids circular dependency
 
     start = datetime(year, month, 1, tzinfo=timezone.utc)
     last_day = monthrange(year, month)[1]
@@ -110,30 +110,32 @@ def build_monthly_csv(year: int, month: int) -> tuple[str, int]:
         .all()
     )
 
+    # Dynamic health question columns
+    questions = HealthQuestion.query.order_by(HealthQuestion.position).all()
+
     output = io.StringIO()
     writer = csv.writer(output, delimiter=";")
-    writer.writerow([
+
+    header = [
         "Vorname", "Nachname", "Firma", "Ansprechpartner", "KFZ-Kennzeichen",
         "Ankunft", "Abfahrt", "Status",
-        "F1_Erkältung", "F2_Durchfall", "F3_Lebensmittelvergiftung",
-        "F4_Parasiten", "F5_HNO", "F6_Haut",
-    ])
-
-    def _q(val):
-        if val is None:
-            return ""
-        return "Ja" if val else "Nein"
+    ]
+    for q in questions:
+        header.append(q.text_de[:50])
+    writer.writerow(header)
 
     for v in visitors:
-        writer.writerow([
+        row = [
             v.first_name, v.last_name, v.company, v.contact_person,
             v.license_plate or "",
             v.arrival_time.strftime("%d.%m.%Y %H:%M") if v.arrival_time else "",
             v.departure_time.strftime("%d.%m.%Y %H:%M") if v.departure_time else "",
             "Vor Ort" if v.is_on_site else "Abgereist",
-            _q(v.q1_flu), _q(v.q2_diarrhea), _q(v.q3_food_poisoning),
-            _q(v.q4_parasites), _q(v.q5_ent), _q(v.q6_skin),
-        ])
+        ]
+        answers = v.get_answers_for_csv()
+        for q in questions:
+            row.append(answers.get(q.short_key, ""))
+        writer.writerow(row)
 
     return output.getvalue(), len(visitors)
 

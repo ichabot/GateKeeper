@@ -63,6 +63,18 @@ class SmtpSettingsForm(FlaskForm):
     submit = SubmitField("Einstellungen speichern")
 
 
+class HealthQuestionForm(FlaskForm):
+    text_de = TextAreaField("Frage (DE)", validators=[DataRequired()])
+    text_en = TextAreaField("Frage (EN)", validators=[DataRequired()])
+    short_key = StringField(
+        "Kurzschlüssel (z.B. 'flu', 'diarrhea')",
+        validators=[DataRequired()],
+    )
+    position = IntegerField("Position / Reihenfolge", default=0)
+    active = BooleanField("Aktiv (wird im Check-in angezeigt)", default=True)
+    submit = SubmitField("Speichern")
+
+
 class EditPageForm(FlaskForm):
     title_de = StringField("Titel (DE)", validators=[DataRequired()])
     title_en = StringField("Titel (EN)", validators=[DataRequired()])

@@ -35,10 +35,14 @@ def create_app(config_name: str | None = None) -> Flask:
 
     babel.init_app(app, locale_selector=get_locale)
 
-    # Make get_locale available in templates
+    # Make get_locale and current year available in templates
     @app.context_processor
-    def inject_locale():
-        return {"get_locale": get_locale}
+    def inject_globals():
+        return {"get_locale": get_locale, "current_year": datetime.now(timezone.utc).year}
+
+    @app.context_processor
+    def inject_now():
+        return {"now": datetime.now}
 
     # Register blueprints
     from app.visitor import visitor_bp
@@ -52,10 +56,10 @@ def create_app(config_name: str | None = None) -> Flask:
 
     # Create tables and seed data on first request (dev convenience)
     with app.app_context():
-        from app.models import AdminUser, SmtpSettings, StaticPage
+        from app.models import AdminUser, HealthQuestion, SmtpSettings, StaticPage
 
         db.create_all()
-        _seed_defaults(db, AdminUser, StaticPage, SmtpSettings, app)
+        _seed_defaults(db, AdminUser, StaticPage, SmtpSettings, HealthQuestion, app)
 
     return app
 
@@ -216,8 +220,8 @@ infectious skin diseases.</p>
 """
 
 
-def _seed_defaults(db, AdminUser, StaticPage, SmtpSettings, app):
-    """Seed default admin user and static pages if not present."""
+def _seed_defaults(db, AdminUser, StaticPage, SmtpSettings, HealthQuestion, app):
+    """Seed default admin user, static pages, and health questions if not present."""
     if not AdminUser.query.first():
         admin = AdminUser(username="admin")
         admin.set_password(app.config.get("ADMIN_DEFAULT_PASSWORD", "admin"))
@@ -251,6 +255,28 @@ def _seed_defaults(db, AdminUser, StaticPage, SmtpSettings, app):
     # Seed default empty SMTP settings row (id=1)
     if not db.session.get(SmtpSettings, 1):
         db.session.add(SmtpSettings(id=1, smtp_port=587, use_tls=True, enabled=False))
+
+    # Seed default health questions (if table is empty)
+    if not HealthQuestion.query.first():
+        default_questions = [
+            (1, "flu", "Erkältungskrankheiten (Husten, Schnupfen, Fieber)",
+             "Flu diseases (cough, runny nose, fever)"),
+            (2, "diarrhea", "Durchfall oder Erbrechen",
+             "Diarrhoea or vomiting"),
+            (3, "food_poisoning",
+             "Salmonellen-, Campylobacter-, Shigellen- oder E. Coli-Lebensmittelvergiftung",
+             "Salmonella, Campylobacter, Shigella or E. Coli food poisoning"),
+            (4, "parasites", "Parasitäre Infektionen",
+             "Any parasitic infection"),
+            (5, "ent", "Hals-Nasen-Ohren-Infektionen",
+             "Ear, nose or throat infections"),
+            (6, "skin", "Hauterkrankungen oder offene, eitrige Wunden",
+             "Skin rashes or open, festering wounds"),
+        ]
+        for pos, key, text_de, text_en in default_questions:
+            db.session.add(HealthQuestion(
+                position=pos, short_key=key, text_de=text_de, text_en=text_en, active=True
+            ))
 
     db.session.commit()
 

@@ -1,7 +1,7 @@
 """WTForms for visitor check-in and check-out."""
 
 from flask_wtf import FlaskForm
-from wtforms import HiddenField, StringField, BooleanField, SubmitField, RadioField
+from wtforms import HiddenField, StringField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional
 
 
@@ -28,37 +28,8 @@ class CheckInForm(FlaskForm):
     )
     signature_data = HiddenField("Unterschrift")
 
-    # Health questionnaire (6 yes/no questions)
-    q1 = RadioField(
-        "q1",
-        choices=[("yes", "Ja"), ("no", "Nein")],
-        validators=[DataRequired(message="Bitte beantworten Sie alle Fragen.")],
-    )
-    q2 = RadioField(
-        "q2",
-        choices=[("yes", "Ja"), ("no", "Nein")],
-        validators=[DataRequired(message="Bitte beantworten Sie alle Fragen.")],
-    )
-    q3 = RadioField(
-        "q3",
-        choices=[("yes", "Ja"), ("no", "Nein")],
-        validators=[DataRequired(message="Bitte beantworten Sie alle Fragen.")],
-    )
-    q4 = RadioField(
-        "q4",
-        choices=[("yes", "Ja"), ("no", "Nein")],
-        validators=[DataRequired(message="Bitte beantworten Sie alle Fragen.")],
-    )
-    q5 = RadioField(
-        "q5",
-        choices=[("yes", "Ja"), ("no", "Nein")],
-        validators=[DataRequired(message="Bitte beantworten Sie alle Fragen.")],
-    )
-    q6 = RadioField(
-        "q6",
-        choices=[("yes", "Ja"), ("no", "Nein")],
-        validators=[DataRequired(message="Bitte beantworten Sie alle Fragen.")],
-    )
+    # Health questions are now dynamic (loaded from DB, rendered in template).
+    # Answers are read directly from request.form in the route.
 
     dsgvo_consent = BooleanField(
         "Datenschutz",
@@ -78,6 +49,6 @@ class CheckInForm(FlaskForm):
 class CheckOutForm(FlaskForm):
     pin = StringField(
         "PIN",
-        validators=[DataRequired(), Length(min=4, max=4)],
+        validators=[DataRequired(), Length(min=4, max=6)],
     )
     submit = SubmitField("Auschecken")

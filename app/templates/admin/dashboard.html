@@ -15,6 +15,7 @@
                     &#128680; Notfall-Liste senden
                 </button>
             </form>
+            <a href="{{ url_for('admin.questions_list') }}" class="btn btn-secondary btn-sm">Gesundheitsfragen</a>
             <a href="{{ url_for('admin.pages_list') }}" class="btn btn-secondary btn-sm">Seiten verwalten</a>
             <a href="{{ url_for('admin.smtp_settings') }}" class="btn btn-secondary btn-sm">E-Mail / SMTP</a>
             <a href="{{ url_for('admin.logout') }}" class="btn btn-secondary btn-sm">Abmelden</a>
@@ -116,10 +117,9 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% set qs = [v.q1_flu, v.q2_diarrhea, v.q3_food_poisoning, v.q4_parasites, v.q5_ent, v.q6_skin] %}
-                        {% if qs | select('none') | list | length == 6 %}
+                        {% if not v.has_any_answers %}
                         <span class="text-muted">—</span>
-                        {% elif qs | select | list | length > 0 %}
+                        {% elif v.has_positive_answer %}
                         <button type="button" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:none;cursor:pointer;"
                                 onclick="document.getElementById('fragen-{{ v.id }}').showModal()">
                             &#9888; Auffällig
@@ -130,6 +130,7 @@
                             &#10003; OK
                         </button>
                         {% endif %}
+                        {% if v.has_any_answers %}
                         <dialog id="fragen-{{ v.id }}" class="modal">
                             <article>
                                 <header>
@@ -139,30 +140,12 @@
                                 </header>
                                 <table style="width:100%;font-size:0.875rem;">
                                     <tbody>
+                                        {% for a in v.get_answers_display() %}
                                         <tr>
-                                            <td>1. Erkältungskrankheiten</td>
-                                            <td><strong>{{ "Ja" if v.q1_flu == True else ("Nein" if v.q1_flu == False else "—") }}</strong></td>
+                                            <td>{{ loop.index }}. {{ a.text_de }}</td>
+                                            <td><strong>{{ "Ja" if a.answer == True else ("Nein" if a.answer == False else "—") }}</strong></td>
                                         </tr>
-                                        <tr>
-                                            <td>2. Durchfall / Erbrechen</td>
-                                            <td><strong>{{ "Ja" if v.q2_diarrhea == True else ("Nein" if v.q2_diarrhea == False else "—") }}</strong></td>
-                                        </tr>
-                                        <tr>
-                                            <td>3. Lebensmittelvergiftung</td>
-                                            <td><strong>{{ "Ja" if v.q3_food_poisoning == True else ("Nein" if v.q3_food_poisoning == False else "—") }}</strong></td>
-                                        </tr>
-                                        <tr>
-                                            <td>4. Parasitäre Infektionen</td>
-                                            <td><strong>{{ "Ja" if v.q4_parasites == True else ("Nein" if v.q4_parasites == False else "—") }}</strong></td>
-                                        </tr>
-                                        <tr>
-                                            <td>5. HNO-Infektionen</td>
-                                            <td><strong>{{ "Ja" if v.q5_ent == True else ("Nein" if v.q5_ent == False else "—") }}</strong></td>
-                                        </tr>
-                                        <tr>
-                                            <td>6. Hauterkrankungen / Wunden</td>
-                                            <td><strong>{{ "Ja" if v.q6_skin == True else ("Nein" if v.q6_skin == False else "—") }}</strong></td>
-                                        </tr>
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                                 <footer>
@@ -170,6 +153,7 @@
                                 </footer>
                             </article>
                         </dialog>
+                        {% endif %}
                     </td>
                     <td>
                         {% if v.missed_checkout %}

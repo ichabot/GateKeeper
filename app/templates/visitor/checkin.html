@@ -57,7 +57,8 @@
                 </div>
             </div>
 
-            <!-- Health Questionnaire -->
+            <!-- Health Questionnaire (dynamic from database) -->
+            {% if questions %}
             <div class="questions-section">
                 <p class="questions-section-title">
                     {{ "Gesundheitsfragebogen *" if lang == 'de' else "Health Questionnaire *" }}
@@ -70,118 +71,33 @@
                     {% endif %}
                 </p>
 
-                <!-- Q1 -->
+                {% for q in questions %}
                 <div class="question-item">
                     <span class="question-text">
-                        {{ "1. Erkältungskrankheiten (Husten, Schnupfen, Fieber)" if lang == 'de' else "1. Flu diseases (cough, runny nose, fever)" }}
+                        {{ loop.index }}. {{ q.text_de if lang == 'de' else q.text_en }}
                     </span>
                     <div class="question-radios">
                         <label class="question-radio-label">
-                            <input type="radio" name="q1" value="yes" {{ 'checked' if form.q1.data == 'yes' }}>
+                            <input type="radio" name="hq_{{ q.id }}" value="yes"
+                                   {{ 'checked' if request.form.get('hq_' ~ q.id|string) == 'yes' }}>
                             {{ "Ja" if lang == 'de' else "Yes" }}
                         </label>
                         <label class="question-radio-label">
-                            <input type="radio" name="q1" value="no" {{ 'checked' if form.q1.data == 'no' }}>
+                            <input type="radio" name="hq_{{ q.id }}" value="no"
+                                   {{ 'checked' if request.form.get('hq_' ~ q.id|string) == 'no' }}>
                             {{ "Nein" if lang == 'de' else "No" }}
                         </label>
                     </div>
                 </div>
+                {% endfor %}
 
-                <!-- Q2 -->
-                <div class="question-item">
-                    <span class="question-text">
-                        {{ "2. Durchfall oder Erbrechen" if lang == 'de' else "2. Diarrhoea or vomiting" }}
-                    </span>
-                    <div class="question-radios">
-                        <label class="question-radio-label">
-                            <input type="radio" name="q2" value="yes" {{ 'checked' if form.q2.data == 'yes' }}>
-                            {{ "Ja" if lang == 'de' else "Yes" }}
-                        </label>
-                        <label class="question-radio-label">
-                            <input type="radio" name="q2" value="no" {{ 'checked' if form.q2.data == 'no' }}>
-                            {{ "Nein" if lang == 'de' else "No" }}
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Q3 -->
-                <div class="question-item">
-                    <span class="question-text">
-                        {% if lang == 'de' %}
-                        3. Salmonellen-, Campylobacter-, Schigellen- oder E. Coli-Lebensmittelvergiftung
-                        {% else %}
-                        3. Salmonella, Campylobacter, Shigella or E. Coli food poisoning
-                        {% endif %}
-                    </span>
-                    <div class="question-radios">
-                        <label class="question-radio-label">
-                            <input type="radio" name="q3" value="yes" {{ 'checked' if form.q3.data == 'yes' }}>
-                            {{ "Ja" if lang == 'de' else "Yes" }}
-                        </label>
-                        <label class="question-radio-label">
-                            <input type="radio" name="q3" value="no" {{ 'checked' if form.q3.data == 'no' }}>
-                            {{ "Nein" if lang == 'de' else "No" }}
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Q4 -->
-                <div class="question-item">
-                    <span class="question-text">
-                        {{ "4. Parasitäre Infektionen" if lang == 'de' else "4. Any parasitic infection" }}
-                    </span>
-                    <div class="question-radios">
-                        <label class="question-radio-label">
-                            <input type="radio" name="q4" value="yes" {{ 'checked' if form.q4.data == 'yes' }}>
-                            {{ "Ja" if lang == 'de' else "Yes" }}
-                        </label>
-                        <label class="question-radio-label">
-                            <input type="radio" name="q4" value="no" {{ 'checked' if form.q4.data == 'no' }}>
-                            {{ "Nein" if lang == 'de' else "No" }}
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Q5 -->
-                <div class="question-item">
-                    <span class="question-text">
-                        {{ "5. Hals-Nasen-Ohren-Infektionen" if lang == 'de' else "5. Ear, nose or throat infections" }}
-                    </span>
-                    <div class="question-radios">
-                        <label class="question-radio-label">
-                            <input type="radio" name="q5" value="yes" {{ 'checked' if form.q5.data == 'yes' }}>
-                            {{ "Ja" if lang == 'de' else "Yes" }}
-                        </label>
-                        <label class="question-radio-label">
-                            <input type="radio" name="q5" value="no" {{ 'checked' if form.q5.data == 'no' }}>
-                            {{ "Nein" if lang == 'de' else "No" }}
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Q6 -->
-                <div class="question-item">
-                    <span class="question-text">
-                        {{ "6. Hauterkrankungen oder offene, eitrige Wunden" if lang == 'de' else "6. Skin rashes or open, festering wounds" }}
-                    </span>
-                    <div class="question-radios">
-                        <label class="question-radio-label">
-                            <input type="radio" name="q6" value="yes" {{ 'checked' if form.q6.data == 'yes' }}>
-                            {{ "Ja" if lang == 'de' else "Yes" }}
-                        </label>
-                        <label class="question-radio-label">
-                            <input type="radio" name="q6" value="no" {{ 'checked' if form.q6.data == 'no' }}>
-                            {{ "Nein" if lang == 'de' else "No" }}
-                        </label>
-                    </div>
-                </div>
-
-                {% if form.q1.errors or form.q2.errors or form.q3.errors or form.q4.errors or form.q5.errors or form.q6.errors %}
+                {% if questions_error is defined and questions_error %}
                 <small class="questions-error">
                     {{ "Bitte beantworten Sie alle Fragen." if lang == 'de' else "Please answer all questions." }}
                 </small>
                 {% endif %}
             </div>
+            {% endif %}
 
             <!-- DSGVO Consent -->
             <div class="dsgvo-section">
@@ -256,7 +172,9 @@
                 <button type="button" onclick="window.location.href='{{ url_for('visitor.home') }}'" class="btn btn-secondary">
                     {{ "Abbrechen" if lang == 'de' else "Cancel" }}
                 </button>
-                {{ form.submit(class="btn btn-checkin btn-submit") }}
+                <button type="submit" class="btn btn-checkin btn-submit">
+                    {{ "Einchecken" if lang == 'de' else "Check In" }}
+                </button>
             </div>
         </form>
     </div>

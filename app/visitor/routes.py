@@ -12,7 +12,7 @@ from flask import (
 )
 
 from app.extensions import db
-from app.models import StaticPage, Visitor
+from app.models import HealthQuestion, StaticPage, Visitor, VisitorAnswer
 from app.visitor import visitor_bp
 from app.visitor.forms import CheckInForm, CheckOutForm
 
@@ -25,13 +25,41 @@ def home():
 @visitor_bp.route("/checkin", methods=["GET", "POST"])
 def checkin():
     form = CheckInForm()
+    questions = (
+        HealthQuestion.query
+        .filter_by(active=True)
+        .order_by(HealthQuestion.position)
+        .all()
+    )
+
     if form.validate_on_submit():
-        # Server-side safety check: refuse check-in if any health question answered "yes"
-        if any(f.data == "yes" for f in [form.q1, form.q2, form.q3, form.q4, form.q5, form.q6]):
-            return render_template("visitor/checkin.html", form=form, health_blocked=True)
+        # Collect answers from dynamic question fields
+        answers = {}
+        any_yes = False
+        all_answered = True
+        for q in questions:
+            val = request.form.get(f"hq_{q.id}")
+            if val not in ("yes", "no"):
+                all_answered = False
+            else:
+                answers[q.id] = (val == "yes")
+                if val == "yes":
+                    any_yes = True
+
+        if not all_answered:
+            return render_template(
+                "visitor/checkin.html", form=form, questions=questions,
+                questions_error=True,
+            )
+
+        # Block check-in if any health question answered "yes"
+        if any_yes:
+            return render_template(
+                "visitor/checkin.html", form=form, questions=questions,
+                health_blocked=True,
+            )
 
         pin = Visitor.generate_unique_pin()
-        # Read signature from raw form data (manual hidden input, not WTForms)
         signature = request.form.get("signature_data") or None
         visitor = Visitor(
             first_name=form.first_name.data.strip(),
@@ -44,17 +72,20 @@ def checkin():
             dsgvo_consent=True,
             hygiene_consent=True,
             safety_consent=True,
-            q1_flu=(form.q1.data == "yes"),
-            q2_diarrhea=(form.q2.data == "yes"),
-            q3_food_poisoning=(form.q3.data == "yes"),
-            q4_parasites=(form.q4.data == "yes"),
-            q5_ent=(form.q5.data == "yes"),
-            q6_skin=(form.q6.data == "yes"),
         )
         db.session.add(visitor)
+        db.session.flush()  # Get visitor.id before adding answers
+
+        # Store answers in new table
+        for q_id, answer_val in answers.items():
+            db.session.add(VisitorAnswer(
+                visitor_id=visitor.id, question_id=q_id, answer=answer_val
+            ))
+
         db.session.commit()
         return redirect(url_for("visitor.checkin_success", pin=pin))
-    return render_template("visitor/checkin.html", form=form)
+
+    return render_template("visitor/checkin.html", form=form, questions=questions)
 
 
 @visitor_bp.route("/checkin/success/<pin>")
@@ -80,7 +111,11 @@ def checkout():
                 )
             )
         else:
-            flash("Ungültiger PIN. Bitte versuchen Sie es erneut.", "error")
+            lang = session.get("lang", "de")
+            if lang == "de":
+                flash("Ungültiger PIN. Bitte versuchen Sie es erneut.", "error")
+            else:
+                flash("Invalid PIN. Please try again.", "error")
     return render_template("visitor/checkout.html", form=form)
 
 

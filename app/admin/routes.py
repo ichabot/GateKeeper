@@ -1,4 +1,4 @@
-"""Admin routes: login, dashboard, export, page editing."""
+"""Admin routes: login, dashboard, export, page editing, health questions."""
 
 import csv
 import io
@@ -15,10 +15,10 @@ from flask import (
 from flask_login import current_user, login_required, login_user, logout_user
 
 from app.admin import admin_bp
-from app.admin.forms import EditPageForm, FilterForm, LoginForm, SmtpSettingsForm
+from app.admin.forms import EditPageForm, FilterForm, HealthQuestionForm, LoginForm, SmtpSettingsForm
 from app.extensions import db
 from app.mail import send_monthly_report, send_emergency_report
-from app.models import AdminUser, SmtpSettings, StaticPage, Visitor
+from app.models import AdminUser, HealthQuestion, SmtpSettings, StaticPage, Visitor
 
 
 @admin_bp.route("/login", methods=["GET", "POST"])
@@ -107,7 +107,7 @@ def dashboard():
 @admin_bp.route("/export")
 @login_required
 def export_csv():
-    """Export filtered visitor list as CSV."""
+    """Export filtered visitor list as CSV with dynamic health question columns."""
     query = Visitor.query
 
     status = request.args.get("status", "all")
@@ -130,22 +130,23 @@ def export_csv():
 
     visitors = query.order_by(Visitor.arrival_time.desc()).all()
 
+    # Get all health questions for CSV headers (active + inactive for completeness)
+    questions = HealthQuestion.query.order_by(HealthQuestion.position).all()
+
     output = io.StringIO()
     writer = csv.writer(output, delimiter=";")
-    writer.writerow([
+
+    # Dynamic header
+    header = [
         "Vorname", "Nachname", "Firma", "Ansprechpartner", "KFZ-Kennzeichen",
         "Ankunft", "Abfahrt", "Status",
-        "F1_Erkältung", "F2_Durchfall", "F3_Lebensmittelvergiftung",
-        "F4_Parasiten", "F5_HNO", "F6_Haut",
-    ])
-
-    def _q(val):
-        if val is None:
-            return ""
-        return "Ja" if val else "Nein"
+    ]
+    for q in questions:
+        header.append(q.text_de[:50])  # Truncate long question texts
+    writer.writerow(header)
 
     for v in visitors:
-        writer.writerow([
+        row = [
             v.first_name,
             v.last_name,
             v.company,
@@ -154,9 +155,11 @@ def export_csv():
             v.arrival_time.strftime("%d.%m.%Y %H:%M") if v.arrival_time else "",
             v.departure_time.strftime("%d.%m.%Y %H:%M") if v.departure_time else "",
             "Vor Ort" if v.is_on_site else "Abgereist",
-            _q(v.q1_flu), _q(v.q2_diarrhea), _q(v.q3_food_poisoning),
-            _q(v.q4_parasites), _q(v.q5_ent), _q(v.q6_skin),
-        ])
+        ]
+        answers = v.get_answers_for_csv()
+        for q in questions:
+            row.append(answers.get(q.short_key, ""))
+        writer.writerow(row)
 
     response = Response(
         output.getvalue(),
@@ -174,6 +177,70 @@ def pages_list():
     pages = StaticPage.query.order_by(StaticPage.slug).all()
     return render_template("admin/pages_list.html", pages=pages)
 
+
+# --- Health Questions Management ---
+
+@admin_bp.route("/questions")
+@login_required
+def questions_list():
+    questions = HealthQuestion.query.order_by(HealthQuestion.position).all()
+    return render_template("admin/questions_list.html", questions=questions)
+
+
+@admin_bp.route("/questions/new", methods=["GET", "POST"])
+@login_required
+def question_new():
+    form = HealthQuestionForm()
+    if form.validate_on_submit():
+        # Auto-generate position (append at end)
+        max_pos = db.session.query(db.func.max(HealthQuestion.position)).scalar() or 0
+        q = HealthQuestion(
+            position=max_pos + 1,
+            text_de=form.text_de.data.strip(),
+            text_en=form.text_en.data.strip(),
+            short_key=form.short_key.data.strip().lower().replace(" ", "_"),
+            active=form.active.data,
+        )
+        db.session.add(q)
+        db.session.commit()
+        flash("Frage erstellt.", "success")
+        return redirect(url_for("admin.questions_list"))
+    return render_template("admin/question_edit.html", form=form, is_new=True)
+
+
+@admin_bp.route("/questions/<int:question_id>", methods=["GET", "POST"])
+@login_required
+def question_edit(question_id):
+    q = db.session.get(HealthQuestion, question_id)
+    if not q:
+        flash("Frage nicht gefunden.", "error")
+        return redirect(url_for("admin.questions_list"))
+
+    form = HealthQuestionForm(obj=q)
+    if form.validate_on_submit():
+        q.text_de = form.text_de.data.strip()
+        q.text_en = form.text_en.data.strip()
+        q.short_key = form.short_key.data.strip().lower().replace(" ", "_")
+        q.active = form.active.data
+        q.position = form.position.data
+        db.session.commit()
+        flash("Frage gespeichert.", "success")
+        return redirect(url_for("admin.questions_list"))
+    return render_template("admin/question_edit.html", form=form, question=q, is_new=False)
+
+
+@admin_bp.route("/questions/<int:question_id>/delete", methods=["POST"])
+@login_required
+def question_delete(question_id):
+    q = db.session.get(HealthQuestion, question_id)
+    if q:
+        db.session.delete(q)
+        db.session.commit()
+        flash("Frage gelöscht.", "success")
+    return redirect(url_for("admin.questions_list"))
+
+
+# --- SMTP Settings ---
 
 @admin_bp.route("/smtp", methods=["GET", "POST"])
 @login_required
