@@ -1,59 +1,84 @@
-# GateKeeper — Besuchermanagement System
+# 🏢 GateKeeper
 
-Modernes, iPad-optimiertes Besuchermanagement-System für den Einsatz am Firmeneingang. Besucher checken sich selbständig ein und aus, während ein passwortgeschützter Admin-Bereich die volle Übersicht bietet.
+> 🇩🇪 [Deutsche Version / German Version](README_DE.md)
+
+**Modern, iPad-optimized visitor management system for company entrances. Visitors check themselves in and out, while a password-protected admin area provides full oversight.**
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
 ![Flask](https://img.shields.io/badge/Flask-3.x-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-## Features
+---
 
-- **Check-in** mit Vorname, Nachname, Firma, Ansprechpartner, KFZ-Kennzeichen, Unterschrift und DSGVO-Einwilligung
-- **Gesundheitsfragebogen** mit 6 Ja/Nein-Fragen (Hygiene, Infektionskrankheiten)
-- **Hygieneregeln & Sicherheitshinweise** als verlinkbare Unterseiten mit Einwilligungs-Checkboxen
-- **4-stelliger PIN** wird beim Check-in generiert — damit checkt der Besucher beim Gehen wieder aus
-- **Touch-optimiertes Unterschriftenfeld** (Finger / Apple Pencil)
-- **Visuelles PIN-Numpad** für den Check-out (kein Keyboard nötig)
-- **Seitenmenü** mit Notfallkontakten, Notfallplänen, Notrufnummern, Besucherinformationen, Hygieneregeln und Sicherheitshinweisen
-- **Admin-Dashboard** (passwortgeschützt):
-  - Besucherliste mit Filter (Datum, Status, Freitextsuche)
-  - Anzeige der Unterschriften und Fragebogen-Antworten
-  - CSV-Export (inkl. Fragebogen-Spalten)
-  - Statische Seiten bearbeiten (Notfall-Infos, Hygieneregeln, Sicherheitshinweise etc.)
-  - SMTP-Einstellungen für automatischen monatlichen Besucherbericht per E-Mail
-- **Monatlicher E-Mail-Report**: Besucherliste als CSV-Anhang, automatisch per Cronjob oder manuell aus dem Admin-Bereich
-- **Notfall-Evakuierungsliste**: Aktuelle Besucherliste sofort per E-Mail an Notfall-Empfänger senden
-- **Zweisprachig**: Deutsch / Englisch (umschaltbar per Klick)
-- **DSGVO-konform**: Einwilligungs-Checkbox, automatischer Daten-Cleanup
-- **iPad-Kiosk-optimiert**: Meta-Tags, touch-freundliche UI, Auto-Redirect nach Aktionen
+## ✨ Features
 
-## Tech Stack
+- **Self-service check-in** — First name, last name, company, contact person, license plate, digital signature, GDPR consent
+- **Health questionnaire** — 6 yes/no questions (hygiene, infectious diseases)
+- **Hygiene rules & safety instructions** — Linkable subpages with consent checkboxes
+- **4-digit PIN** — Generated at check-in, used to check out when leaving
+- **Touch-optimized signature field** — Finger / Apple Pencil support
+- **Visual PIN numpad** — For check-out (no keyboard needed)
+- **Side menu** — Emergency contacts, emergency plans, emergency numbers, visitor information, hygiene rules, safety instructions
+- **Admin dashboard** (password-protected):
+  - Visitor list with filters (date, status, free text search)
+  - Display of signatures and questionnaire answers
+  - CSV export (including questionnaire columns)
+  - Edit static pages (emergency info, hygiene rules, safety instructions, etc.)
+  - SMTP settings for automatic monthly visitor report by email
+- **Monthly email report** — Visitor list as CSV attachment, automatically via cron or manually from admin area
+- **Emergency evacuation list** — Send current visitor list immediately by email to emergency recipients
+- **Bilingual** — German / English (switchable with one click)
+- **GDPR compliant** — Consent checkbox, automatic data cleanup
+- **iPad kiosk optimized** — Meta tags, touch-friendly UI, auto-redirect after actions
 
-| Komponente | Technologie |
-|------------|-------------|
+---
+
+## ⚠️ Disclaimer
+
+This project was developed with AI assistance ("vibe coding") and uses third-party open-source dependencies that have **not been independently audited**. The software is provided "as is" under the MIT License, without warranty of any kind.
+
+**Please note:**
+- This is a personal/hobby project, not a certified visitor management system
+- The health questionnaire and safety instructions are **examples** — adapt them to your specific regulations
+- Digital signatures stored as Base64 PNG — not legally equivalent to qualified electronic signatures in all jurisdictions
+- External dependencies (Flask, SQLAlchemy, Pico CSS, etc.) are maintained by their respective projects
+- Always test thoroughly before deploying in a production environment
+
+> **Short version:** Test first, adapt the content to your needs, verify compliance with your local regulations.
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology |
+|-----------|------------|
 | Backend | Python 3.11+ / Flask 3.x |
-| Datenbank | SQLite (dateibasiert, kein Server nötig) |
+| Database | SQLite (file-based, no server needed) |
 | ORM | SQLAlchemy + Flask-Migrate |
 | Frontend | Pico CSS v2 + Vanilla JS |
 | Auth | Flask-Login + Werkzeug Password Hashing |
-| i18n | Deutsch / Englisch (Session-basiert) |
-| Deployment | Apache + mod_wsgi oder Gunicorn |
+| i18n | German / English (session-based) |
+| Deployment | Apache + mod_wsgi or Gunicorn |
 
-## Installation
+---
 
-### Voraussetzungen
+## 📋 Requirements
 
-- Python 3.11+
-- pip oder uv
+| Component | Version | Note |
+|-----------|---------|------|
+| **Python** | 3.11+ | Recommended: 3.12 |
+| **pip** | latest | Or use [uv](https://docs.astral.sh/uv/) |
 
-### Schnellstart
+---
+
+## 🚀 Installation
 
 ```bash
-# Repository klonen
+# Clone the repository
 git clone https://github.com/ichabot/GateKeeper.git
 cd GateKeeper
 
-# Virtual Environment erstellen und aktivieren
+# Create and activate virtual environment
 python -m venv venv
 
 # Windows:
@@ -61,138 +86,144 @@ venv\Scripts\activate
 # Linux/macOS:
 source venv/bin/activate
 
-# Dependencies installieren
+# Install dependencies
 pip install -r requirements.txt
 
-# .env Datei anlegen
+# Create .env file
 cp .env.example .env
-# Optional: SECRET_KEY in .env anpassen
+# Optional: edit SECRET_KEY in .env
 
-# Starten
+# Start the application
 flask run
 ```
 
-Die App ist dann unter **http://localhost:5000** erreichbar.
+The app is then available at **http://localhost:5000**.
 
-> **Hinweis:** Die SQLite-Datenbank (`instance/gatekeeper.db`) wird automatisch beim ersten Start erstellt. Ein Admin-Benutzer (`admin` / `admin`) und die Standard-Infoseiten werden ebenfalls automatisch angelegt.
+> **Note:** The SQLite database (`instance/gatekeeper.db`) is created automatically on first start. An admin user (`admin` / `admin`) and default info pages are also created automatically.
 
-### Standard-Admin-Zugang
+### Default Admin Access
 
 | | |
 |---|---|
 | URL | http://localhost:5000/admin/login |
-| Benutzername | `admin` |
-| Passwort | `admin` |
+| Username | `admin` |
+| Password | `admin` |
 
-**Wichtig:** Passwort in Produktion ändern:
+**Important:** Change the password in production:
 
 ```bash
-flask seed-admin --username admin --password <neues-passwort>
+flask seed-admin --username admin --password <new-password>
 ```
 
-## Projektstruktur
+---
+
+## 📁 Project Structure
 
 ```
 GateKeeper/
 ├── app/
-│   ├── __init__.py              # App Factory, CLI Commands, Seed-Daten
+│   ├── __init__.py              # App Factory, CLI Commands, Seed Data
 │   ├── extensions.py            # Flask Extensions (DB, Login, Babel, CSRF)
-│   ├── models.py                # Datenmodelle (Visitor, AdminUser, StaticPage, SmtpSettings)
-│   ├── mail.py                  # E-Mail-Versand (SMTP, monatlicher CSV-Report)
-│   ├── visitor/                 # Blueprint: Besucher-Seiten
-│   │   ├── routes.py            #   Check-in, Check-out, Info-Seiten, Sprache
+│   ├── models.py                # Data Models (Visitor, AdminUser, StaticPage, SmtpSettings)
+│   ├── mail.py                  # Email Sending (SMTP, monthly CSV report)
+│   ├── visitor/                 # Blueprint: Visitor Pages
+│   │   ├── routes.py            #   Check-in, Check-out, Info Pages, Language
 │   │   └── forms.py             #   WTForms (CheckIn, CheckOut)
-│   ├── admin/                   # Blueprint: Admin-Bereich
-│   │   ├── routes.py            #   Login, Dashboard, Export, Seitenverwaltung, SMTP
+│   ├── admin/                   # Blueprint: Admin Area
+│   │   ├── routes.py            #   Login, Dashboard, Export, Page Management, SMTP
 │   │   └── forms.py             #   WTForms (Login, Filter, EditPage, SmtpSettings)
 │   ├── templates/               # Jinja2 Templates
-│   │   ├── base.html            #   Master-Layout (Header, Nav, Footer)
+│   │   ├── base.html            #   Master Layout (Header, Nav, Footer)
 │   │   ├── visitor/             #   Home, Checkin, Checkout, Info, Success
-│   │   └── admin/               #   Login, Dashboard, Seitenverwaltung
+│   │   └── admin/               #   Login, Dashboard, Page Management
 │   ├── static/
-│   │   ├── css/style.css        #   Custom Styles (Pico CSS Basis)
-│   │   ├── js/app.js            #   PIN-Numpad, Signature Pad, Auto-Timeout
-│   │   └── img/logo.png         #   Firmenlogo (Platzhalter — bitte ersetzen)
-│   └── translations/            # Flask-Babel Übersetzungsdateien
+│   │   ├── css/style.css        #   Custom Styles (Pico CSS base)
+│   │   ├── js/app.js            #   PIN Numpad, Signature Pad, Auto-Timeout
+│   │   └── img/logo.png         #   Company Logo (placeholder — replace with yours)
+│   └── translations/            # Flask-Babel Translation Files
 ├── deploy/
-│   ├── gatekeeper.conf          # Apache VHost Konfiguration (Referenz)
+│   ├── gatekeeper.conf          # Apache VHost Configuration (reference)
 │   └── setup.sh                 # Ubuntu Deployment Script
 ├── database/
-│   └── schema.sql               # SQL Schema Referenz (Dokumentation)
-├── INFOS/                       # Quelltexte für statische Seiten (DE/EN)
+│   └── schema.sql               # SQL Schema Reference (documentation)
+├── INFOS/                       # Source Texts for Static Pages (DE/EN)
 ├── config.py                    # Flask Config (Development / Production)
-├── wsgi.py                      # WSGI Entry Point für Apache / Gunicorn
+├── wsgi.py                      # WSGI Entry Point for Apache / Gunicorn
 ├── requirements.txt             # Python Dependencies
-├── babel.cfg                    # Flask-Babel Extraktions-Config
-└── .env.example                 # Umgebungsvariablen Vorlage
+├── babel.cfg                    # Flask-Babel Extraction Config
+└── .env.example                 # Environment Variables Template
 ```
 
-## Routen-Übersicht
+---
 
-### Besucher (öffentlich)
+## 🔀 Routes
 
-| Route | Beschreibung |
+### Visitor (public)
+
+| Route | Description |
 |-------|-------------|
-| `GET /` | Willkommensseite (Einchecken / Auschecken) |
-| `GET/POST /checkin` | Check-in Formular |
-| `GET /checkin/success/<pin>` | PIN-Anzeige nach Check-in |
-| `GET/POST /checkout` | Check-out per PIN-Numpad |
-| `GET /checkout/success` | Verabschiedung |
-| `GET /info/<slug>` | Statische Info-Seiten |
-| `GET /lang/<code>` | Sprache wechseln (de/en) |
+| `GET /` | Welcome page (Check-in / Check-out) |
+| `GET/POST /checkin` | Check-in form |
+| `GET /checkin/success/<pin>` | PIN display after check-in |
+| `GET/POST /checkout` | Check-out via PIN numpad |
+| `GET /checkout/success` | Farewell page |
+| `GET /info/<slug>` | Static info pages |
+| `GET /lang/<code>` | Switch language (de/en) |
 
-### Admin (passwortgeschützt)
+### Admin (password-protected)
 
-| Route | Beschreibung |
+| Route | Description |
 |-------|-------------|
-| `GET/POST /admin/login` | Admin-Login |
-| `GET /admin/logout` | Abmelden |
-| `GET /admin/dashboard` | Besucher-Dashboard mit Filtern |
-| `GET /admin/export` | CSV-Export (gefiltert, inkl. Fragebogen) |
-| `GET /admin/pages` | Statische Seiten verwalten |
-| `GET/POST /admin/pages/<slug>` | Seite bearbeiten (HTML) |
-| `GET/POST /admin/smtp` | SMTP-Einstellungen für E-Mail-Report |
-| `POST /admin/smtp/test` | Test-E-Mail senden (aktueller Monat) |
-| `POST /admin/smtp/send-report` | Vormonatsbericht manuell senden |
-| `POST /admin/emergency-send` | Notfall-Evakuierungsliste senden |
+| `GET/POST /admin/login` | Admin login |
+| `GET /admin/logout` | Logout |
+| `GET /admin/dashboard` | Visitor dashboard with filters |
+| `GET /admin/export` | CSV export (filtered, incl. questionnaire) |
+| `GET /admin/pages` | Manage static pages |
+| `GET/POST /admin/pages/<slug>` | Edit page (HTML) |
+| `GET/POST /admin/smtp` | SMTP settings for email reports |
+| `POST /admin/smtp/test` | Send test email (current month) |
+| `POST /admin/smtp/send-report` | Send previous month's report manually |
+| `POST /admin/emergency-send` | Send emergency evacuation list |
 
-## Deployment auf Ubuntu / Apache
+---
 
-### Schnellinstallation
+## 🖥️ Deployment on Ubuntu / Apache
+
+### Quick Installation
 
 ```bash
-# 1. Dateien auf den Server kopieren
+# 1. Copy files to server
 sudo mkdir -p /opt/gatekeeper
 sudo git clone https://github.com/ichabot/GateKeeper.git /opt/gatekeeper
 
-# 2. Setup-Script ausführen
+# 2. Run setup script
 sudo bash /opt/gatekeeper/deploy/setup.sh
 ```
 
-Das Script erledigt automatisch:
-- System-Pakete installieren (Python3, Apache, mod_wsgi)
-- Python Virtual Environment erstellen + Dependencies installieren
-- `.env`-Datei mit generiertem Secret Key und SQLite-Pfad erstellen
-- Datenbank-Tabellen anlegen + Admin-User + Standard-Seiten anlegen
-- Apache konfigurieren und starten
+The script automatically:
+- Installs system packages (Python3, Apache, mod_wsgi)
+- Creates Python virtual environment + installs dependencies
+- Creates `.env` file with generated secret key and SQLite path
+- Creates database tables + admin user + default pages
+- Configures and starts Apache
 
-### Manuelles Setup
+### Manual Setup
 
-1. **System-Pakete:**
+1. **System packages:**
    ```bash
    sudo apt-get update -y
    sudo apt-get install -y python3 python3-venv python3-dev \
        apache2 libapache2-mod-wsgi-py3
    ```
 
-2. **App einrichten:**
+2. **Set up the app:**
    ```bash
    cd /opt/gatekeeper
    python3 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
    cp .env.example .env
-   # .env anpassen: SECRET_KEY setzen
+   # Edit .env: set SECRET_KEY
    # DATABASE_URL=sqlite:////opt/gatekeeper/instance/gatekeeper.db
    mkdir -p instance
    flask seed-admin --username admin
@@ -207,73 +238,85 @@ Das Script erledigt automatisch:
    sudo systemctl reload apache2
    ```
 
-## iPad-Kiosk Einrichtung
+---
 
-1. Safari öffnen und die GateKeeper-URL aufrufen
-2. "Zum Home-Bildschirm" hinzufügen (für Vollbild-Webapp)
-3. **Geführter Zugang** (Guided Access) aktivieren:
-   - Einstellungen > Bedienungshilfen > Geführter Zugang
-   - Dreimal Home-/Seitentaste drücken zum Aktivieren
-   - Verhindert, dass Besucher die App verlassen
+## 📱 iPad Kiosk Setup
 
-## Anpassung
+1. Open Safari and navigate to the GateKeeper URL
+2. "Add to Home Screen" (for fullscreen webapp)
+3. Enable **Guided Access**:
+   - Settings > Accessibility > Guided Access
+   - Triple-press Home/Side button to activate
+   - Prevents visitors from leaving the app
 
-### Firmenlogo
+---
 
-Das Platzhalter-Logo unter `app/static/img/logo.png` durch das eigene Firmenlogo ersetzen. Empfohlene Größe: max. 160px Breite, 40px Höhe, PNG mit transparentem Hintergrund.
+## 🎨 Customization
 
-### Titeltext ändern
+### Company Logo
 
-Alle Textstellen befinden sich in `app/templates/base.html`:
+Replace the placeholder logo at `app/static/img/logo.png` with your own company logo. Recommended size: max. 160px width, 40px height, PNG with transparent background.
 
-| Element | Standard |
+### Title Text
+
+All text elements are in `app/templates/base.html`:
+
+| Element | Default |
 |---------|---------|
 | `<span class="app-title">` | `GateKeeper` |
 | `{% block title %}` | `GateKeeper` |
-| Footer-Text | `GateKeeper © 2026 — Besuchermanagement` |
+| Footer text | `GateKeeper © 2026 — Besuchermanagement` |
 
-### Statische Seiten
+### Static Pages
 
-Inhalte der Infoseiten (Hygieneregeln, Sicherheitshinweise etc.) können direkt im Admin-Bereich unter "Seiten" bearbeitet werden — kein Code-Zugriff nötig.
+Content of info pages (hygiene rules, safety instructions, etc.) can be edited directly in the admin area under "Pages" — no code access needed.
 
-## CLI Commands
+---
 
-| Command | Beschreibung |
+## ⌨️ CLI Commands
+
+| Command | Description |
 |---------|-------------|
-| `flask run` | Entwicklungsserver starten |
-| `flask seed-admin` | Admin-Benutzer erstellen/Passwort ändern |
-| `flask cleanup-visitors --days 90` | Alte Besucherdaten löschen (DSGVO) |
-| `flask send-monthly-report` | Vormonatsbericht per E-Mail senden |
+| `flask run` | Start development server |
+| `flask seed-admin` | Create admin user / change password |
+| `flask cleanup-visitors --days 90` | Delete old visitor data (GDPR) |
+| `flask send-monthly-report` | Send previous month's report by email |
 
-## DSGVO / Datenschutz
+---
 
-- Besucher müssen vor dem Check-in der Datenschutzerklärung zustimmen
-- Unterschrift wird digital erfasst und gespeichert
-- Besucher können **keine** Daten anderer Besucher einsehen
-- Automatischer Daten-Cleanup per Cronjob:
+## 🔒 GDPR / Data Privacy
+
+- Visitors must consent to the privacy policy before check-in
+- Signature is digitally captured and stored
+- Visitors **cannot** view other visitors' data
+- Automatic data cleanup via cron:
 
 ```bash
-# Täglicher Cleanup (Daten älter als 90 Tage)
+# Daily cleanup (data older than 90 days)
 0 2 * * * cd /opt/gatekeeper && venv/bin/flask cleanup-visitors --days 90
 ```
 
-## E-Mail Report
+---
 
-### Monatlicher Besucherbericht
+## 📧 Email Report
 
-Am 1. jeden Monats um 7:00 Uhr den Vormonatsbericht senden:
+### Monthly Visitor Report
+
+Send previous month's report on the 1st of each month at 7:00 AM:
 
 ```bash
 0 7 1 * * cd /opt/gatekeeper && venv/bin/flask send-monthly-report
 ```
 
-### Einrichtung
+### Setup
 
-1. Admin-Dashboard öffnen → **E-Mail / SMTP**
-2. SMTP-Zugangsdaten eintragen
-3. **Test-E-Mail senden** zum Prüfen der Verbindung
-4. **Monatlicher Versand aktiv** aktivieren
+1. Open Admin Dashboard → **Email / SMTP**
+2. Enter SMTP credentials
+3. **Send test email** to verify the connection
+4. Enable **Monthly sending active**
 
-## Lizenz
+---
 
-MIT License — siehe [LICENSE](LICENSE)
+## 📄 License
+
+MIT License — see [LICENSE](LICENSE)
