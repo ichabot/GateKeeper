@@ -2,6 +2,7 @@
 
 import csv
 import io
+from collections import defaultdict
 from datetime import datetime, time, timedelta, timezone
 
 from flask import (
@@ -20,18 +21,52 @@ from app.extensions import db
 from app.mail import send_monthly_report, send_emergency_report
 from app.models import AdminUser, HealthQuestion, SmtpSettings, StaticPage, Visitor
 
+# --- Simple brute-force protection (in-memory) ---
+_login_attempts = defaultdict(list)  # IP -> list of timestamps
+_MAX_ATTEMPTS = 5
+_LOCKOUT_SECONDS = 60
+
+
+def _is_rate_limited(ip: str) -> bool:
+    """Check if IP has exceeded login attempt limit."""
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(seconds=_LOCKOUT_SECONDS)
+    # Clean old attempts
+    _login_attempts[ip] = [t for t in _login_attempts[ip] if t > cutoff]
+    return len(_login_attempts[ip]) >= _MAX_ATTEMPTS
+
+
+def _record_failed_attempt(ip: str):
+    _login_attempts[ip].append(datetime.now(timezone.utc))
+
 
 @admin_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("admin.dashboard"))
+
+    ip = request.remote_addr or "unknown"
     form = LoginForm()
+
     if form.validate_on_submit():
+        if _is_rate_limited(ip):
+            flash("Zu viele Anmeldeversuche. Bitte warten Sie eine Minute.", "error")
+            return render_template("admin/login.html", form=form)
+
         user = AdminUser.query.filter_by(username=form.username.data).first()
         if user and user.check_password(form.password.data):
+            # Clear attempts on successful login
+            _login_attempts.pop(ip, None)
             login_user(user)
             return redirect(url_for("admin.dashboard"))
-        flash("Ungültige Anmeldedaten.", "error")
+
+        _record_failed_attempt(ip)
+        remaining = _MAX_ATTEMPTS - len(_login_attempts.get(ip, []))
+        if remaining > 0:
+            flash(f"Ungültige Anmeldedaten. ({remaining} Versuch(e) verbleibend)", "error")
+        else:
+            flash("Zu viele Anmeldeversuche. Bitte warten Sie eine Minute.", "error")
+
     return render_template("admin/login.html", form=form)
 
 
