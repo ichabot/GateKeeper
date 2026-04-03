@@ -146,7 +146,6 @@ GateKeeper/
 │   └── setup.sh                 # Ubuntu Deployment Script
 ├── database/
 │   └── schema.sql               # SQL Schema Reference (documentation)
-├── INFOS/                       # Source Texts for Static Pages (DE/EN)
 ├── config.py                    # Flask Config (Development / Production)
 ├── wsgi.py                      # WSGI Entry Point for Apache / Gunicorn
 ├── requirements.txt             # Python Dependencies
