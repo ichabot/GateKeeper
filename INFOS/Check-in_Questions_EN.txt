@@ -1,0 +1,8 @@
+In the last 7 days have you suffered from any of the following conditions?
+1. Flues diseases (cough, runny nose, fever) Yes / No
+2. Diarrhoea or vomiting Yes / No
+3. Salmonella, Campylobacter, Shigella Yes / No
+or E. Coli- food poisoning
+4. any Parasitic infection Yes / No
+5. Ear, nose or throat infections Yes / No
+6. Skin rashes Yes / No

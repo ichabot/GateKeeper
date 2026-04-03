@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}GateKeeper - Seiten verwalten{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h2>Statische Seiten verwalten</h2>
+        <div class="admin-actions">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">Zurück zum Dashboard</a>
+        </div>
+    </div>
+
+    <div class="pages-grid">
+        {% for page in pages %}
+        <div class="page-card">
+            <h3>{{ page.title_de }}</h3>
+            <p class="page-updated">Zuletzt bearbeitet: {{ page.updated_at.strftime('%d.%m.%Y %H:%M') if page.updated_at }}</p>
+            <a href="{{ url_for('admin.edit_page', slug=page.slug) }}" class="btn btn-primary btn-sm">Bearbeiten</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

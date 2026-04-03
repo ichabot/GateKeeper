@@ -1,0 +1,8 @@
+Haben Sie in der letzten 7 Tagen an folgenden Krankheiten gelitten?
+1. Erkältungskrankheiten (Husten, Schnupfen, Fieber) Ja / Nein
+2. Durchfall oder Erbrechen Ja / Nein
+3. Salmonellen-, Campylobacter-, Schigellen- Ja / Nein
+oder E. Coli- Lebensmittelvergiftung
+4. Parasitäre Infektionen Ja / Nein
+5. Hals-Nasen-Ohren Infektionen Ja / Nein
+6. Hauterkrankungen oder offene, eitrige Wunden Ja / Nein

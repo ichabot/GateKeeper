@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+{% set lang = session.get('lang', 'de') %}
+
+{% block title %}GateKeeper - {{ "Einchecken" if lang == 'de' else "Check In" }}{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <h2>{{ "Einchecken" if lang == 'de' else "Check In" }}</h2>
+        <p class="form-subtitle">
+            {{ "Bitte füllen Sie das Formular aus" if lang == 'de' else "Please fill in the form" }}
+        </p>
+
+        <form method="POST" action="{{ url_for('visitor.checkin') }}" id="checkinForm">
+            {{ form.hidden_tag() }}
+
+            <!-- Personal Data -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="first_name">{{ "Vorname" if lang == 'de' else "First Name" }} *</label>
+                    {{ form.first_name(id="first_name", placeholder="Vorname" if lang == 'de' else "First Name", class="form-input", autocomplete="off") }}
+                    {% if form.first_name.errors %}
+                    <small class="error-text">{{ form.first_name.errors[0] }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="last_name">{{ "Nachname" if lang == 'de' else "Last Name" }} *</label>
+                    {{ form.last_name(id="last_name", placeholder="Nachname" if lang == 'de' else "Last Name", class="form-input", autocomplete="off") }}
+                    {% if form.last_name.errors %}
+                    <small class="error-text">{{ form.last_name.errors[0] }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="company">{{ "Firma" if lang == 'de' else "Company" }} *</label>
+                    {{ form.company(id="company", placeholder="Firma" if lang == 'de' else "Company", class="form-input", autocomplete="off") }}
+                    {% if form.company.errors %}
+                    <small class="error-text">{{ form.company.errors[0] }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="contact_person">{{ "Ansprechpartner" if lang == 'de' else "Contact Person" }} *</label>
+                    {{ form.contact_person(id="contact_person", placeholder="Wen besuchen Sie?" if lang == 'de' else "Who are you visiting?", class="form-input", autocomplete="off") }}
+                    {% if form.contact_person.errors %}
+                    <small class="error-text">{{ form.contact_person.errors[0] }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="license_plate">{{ "KFZ-Kennzeichen" if lang == 'de' else "License Plate" }}</label>
+                    {{ form.license_plate(id="license_plate", placeholder="z.B. M-AB 1234" if lang == 'de' else "e.g. M-AB 1234", class="form-input", autocomplete="off") }}
+                    {% if form.license_plate.errors %}
+                    <small class="error-text">{{ form.license_plate.errors[0] }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Health Questionnaire -->
+            <div class="questions-section">
+                <p class="questions-section-title">
+                    {{ "Gesundheitsfragebogen *" if lang == 'de' else "Health Questionnaire *" }}
+                </p>
+                <p class="questions-section-subtitle">
+                    {% if lang == 'de' %}
+                    Haben Sie in den letzten 7 Tagen an folgenden Krankheiten gelitten?
+                    {% else %}
+                    In the last 7 days have you suffered from any of the following conditions?
+                    {% endif %}
+                </p>
+
+                <!-- Q1 -->
+                <div class="question-item">
+                    <span class="question-text">
+                        {{ "1. Erkältungskrankheiten (Husten, Schnupfen, Fieber)" if lang == 'de' else "1. Flu diseases (cough, runny nose, fever)" }}
+                    </span>
+                    <div class="question-radios">
+                        <label class="question-radio-label">
+                            <input type="radio" name="q1" value="yes" {{ 'checked' if form.q1.data == 'yes' }}>
+                            {{ "Ja" if lang == 'de' else "Yes" }}
+                        </label>
+                        <label class="question-radio-label">
+                            <input type="radio" name="q1" value="no" {{ 'checked' if form.q1.data == 'no' }}>
+                            {{ "Nein" if lang == 'de' else "No" }}
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="question-item">
+                    <span class="question-text">
+                        {{ "2. Durchfall oder Erbrechen" if lang == 'de' else "2. Diarrhoea or vomiting" }}
+                    </span>
+                    <div class="question-radios">
+                        <label class="question-radio-label">
+                            <input type="radio" name="q2" value="yes" {{ 'checked' if form.q2.data == 'yes' }}>
+                            {{ "Ja" if lang == 'de' else "Yes" }}
+                        </label>
+                        <label class="question-radio-label">
+                            <input type="radio" name="q2" value="no" {{ 'checked' if form.q2.data == 'no' }}>
+                            {{ "Nein" if lang == 'de' else "No" }}
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="question-item">
+                    <span class="question-text">
+                        {% if lang == 'de' %}
+                        3. Salmonellen-, Campylobacter-, Schigellen- oder E. Coli-Lebensmittelvergiftung
+                        {% else %}
+                        3. Salmonella, Campylobacter, Shigella or E. Coli food poisoning
+                        {% endif %}
+                    </span>
+                    <div class="question-radios">
+                        <label class="question-radio-label">
+                            <input type="radio" name="q3" value="yes" {{ 'checked' if form.q3.data == 'yes' }}>
+                            {{ "Ja" if lang == 'de' else "Yes" }}
+                        </label>
+                        <label class="question-radio-label">
+                            <input type="radio" name="q3" value="no" {{ 'checked' if form.q3.data == 'no' }}>
+                            {{ "Nein" if lang == 'de' else "No" }}
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q4 -->
+                <div class="question-item">
+                    <span class="question-text">
+                        {{ "4. Parasitäre Infektionen" if lang == 'de' else "4. Any parasitic infection" }}
+                    </span>
+                    <div class="question-radios">
+                        <label class="question-radio-label">
+                            <input type="radio" name="q4" value="yes" {{ 'checked' if form.q4.data == 'yes' }}>
+                            {{ "Ja" if lang == 'de' else "Yes" }}
+                        </label>
+                        <label class="question-radio-label">
+                            <input type="radio" name="q4" value="no" {{ 'checked' if form.q4.data == 'no' }}>
+                            {{ "Nein" if lang == 'de' else "No" }}
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q5 -->
+                <div class="question-item">
+                    <span class="question-text">
+                        {{ "5. Hals-Nasen-Ohren-Infektionen" if lang == 'de' else "5. Ear, nose or throat infections" }}
+                    </span>
+                    <div class="question-radios">
+                        <label class="question-radio-label">
+                            <input type="radio" name="q5" value="yes" {{ 'checked' if form.q5.data == 'yes' }}>
+                            {{ "Ja" if lang == 'de' else "Yes" }}
+                        </label>
+                        <label class="question-radio-label">
+                            <input type="radio" name="q5" value="no" {{ 'checked' if form.q5.data == 'no' }}>
+                            {{ "Nein" if lang == 'de' else "No" }}
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q6 -->
+                <div class="question-item">
+                    <span class="question-text">
+                        {{ "6. Hauterkrankungen oder offene, eitrige Wunden" if lang == 'de' else "6. Skin rashes or open, festering wounds" }}
+                    </span>
+                    <div class="question-radios">
+                        <label class="question-radio-label">
+                            <input type="radio" name="q6" value="yes" {{ 'checked' if form.q6.data == 'yes' }}>
+                            {{ "Ja" if lang == 'de' else "Yes" }}
+                        </label>
+                        <label class="question-radio-label">
+                            <input type="radio" name="q6" value="no" {{ 'checked' if form.q6.data == 'no' }}>
+                            {{ "Nein" if lang == 'de' else "No" }}
+                        </label>
+                    </div>
+                </div>
+
+                {% if form.q1.errors or form.q2.errors or form.q3.errors or form.q4.errors or form.q5.errors or form.q6.errors %}
+                <small class="questions-error">
+                    {{ "Bitte beantworten Sie alle Fragen." if lang == 'de' else "Please answer all questions." }}
+                </small>
+                {% endif %}
+            </div>
+
+            <!-- DSGVO Consent -->
+            <div class="dsgvo-section">
+                <label class="dsgvo-label">
+                    {{ form.dsgvo_consent(id="dsgvo_consent") }}
+                    <span>
+                        {% if lang == 'de' %}
+                        Ich stimme der <a href="#" onclick="event.preventDefault(); document.getElementById('dsgvoModal').showModal();">Datenschutzerklärung</a> zu und bin mit der Erfassung meiner Daten einverstanden. *
+                        {% else %}
+                        I agree to the <a href="#" onclick="event.preventDefault(); document.getElementById('dsgvoModal').showModal();">privacy policy</a> and consent to the processing of my data. *
+                        {% endif %}
+                    </span>
+                </label>
+                {% if form.dsgvo_consent.errors %}
+                <small class="error-text">{{ form.dsgvo_consent.errors[0] }}</small>
+                {% endif %}
+            </div>
+
+            <!-- Hygiene Rules Consent -->
+            <div class="dsgvo-section" style="margin-top:0.75rem;">
+                <label class="dsgvo-label">
+                    {{ form.hygiene_consent(id="hygiene_consent") }}
+                    <span>
+                        {% if lang == 'de' %}
+                        Hiermit bestätige ich, dass ich die <a href="{{ url_for('visitor.info_page', slug='hygiene_rules') }}" target="_blank">Hygieneregeln</a> gelesen und verstanden habe und die Fragen korrekt beantwortet wurden. *
+                        {% else %}
+                        I confirm that the information I have given is correct and I have read and understood the <a href="{{ url_for('visitor.info_page', slug='hygiene_rules') }}" target="_blank">hygiene rules</a>. *
+                        {% endif %}
+                    </span>
+                </label>
+                {% if form.hygiene_consent.errors %}
+                <small class="error-text">{{ form.hygiene_consent.errors[0] }}</small>
+                {% endif %}
+            </div>
+
+            <!-- Safety / Conduct Consent -->
+            <div class="dsgvo-section" style="margin-top:0.75rem;">
+                <label class="dsgvo-label">
+                    {{ form.safety_consent(id="safety_consent") }}
+                    <span>
+                        {% if lang == 'de' %}
+                        Ich habe die <a href="{{ url_for('visitor.info_page', slug='safety_conduct') }}" target="_blank">Sicherheits-/Verhaltenshinweise</a> gelesen und bestätige deren Einhaltung. *
+                        {% else %}
+                        I have read the <a href="{{ url_for('visitor.info_page', slug='safety_conduct') }}" target="_blank">rules of safety / conduct</a> and confirm that I will comply with them. *
+                        {% endif %}
+                    </span>
+                </label>
+                {% if form.safety_consent.errors %}
+                <small class="error-text">{{ form.safety_consent.errors[0] }}</small>
+                {% endif %}
+            </div>
+
+            <!-- Signature Pad -->
+            <div class="signature-section">
+                <label>{{ "Unterschrift" if lang == 'de' else "Signature" }} *</label>
+                <div class="signature-pad-wrapper">
+                    <canvas id="signaturePad" class="signature-canvas"></canvas>
+                    <button type="button" class="signature-clear-btn" onclick="clearSignature()">
+                        {{ "Löschen" if lang == 'de' else "Clear" }}
+                    </button>
+                </div>
+                <textarea name="signature_data" id="signatureData" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" tabindex="-1" aria-hidden="true"></textarea>
+                <small class="signature-hint">
+                    {{ "Bitte unterschreiben Sie mit dem Finger oder Stift" if lang == 'de' else "Please sign with your finger or stylus" }}
+                </small>
+                <small class="error-text" id="signatureError" style="display:none;">
+                    {{ "Bitte unterschreiben Sie das Formular." if lang == 'de' else "Please sign the form." }}
+                </small>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" onclick="window.location.href='{{ url_for('visitor.home') }}'" class="btn btn-secondary">
+                    {{ "Abbrechen" if lang == 'de' else "Cancel" }}
+                </button>
+                {{ form.submit(class="btn btn-checkin btn-submit") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Health Warning Modal -->
+<dialog id="healthWarningModal" class="modal">
+    <article>
+        <header>
+            <button aria-label="Close" rel="prev" onclick="document.getElementById('healthWarningModal').close()"></button>
+            <h3>{{ "Zugang nicht möglich" if lang == 'de' else "Access not permitted" }}</h3>
+        </header>
+        <p>
+            {% if lang == 'de' %}
+            Aufgrund Ihrer Angaben im Gesundheitsfragebogen kann der Zutritt zum Betrieb leider nicht gestattet werden.<br><br>
+            <strong>Bitte wenden Sie sich an einen Mitarbeiter.</strong>
+            {% else %}
+            Based on your answers in the health questionnaire, access to the premises cannot be granted at this time.<br><br>
+            <strong>Please contact a member of staff.</strong>
+            {% endif %}
+        </p>
+        <footer>
+            <button onclick="document.getElementById('healthWarningModal').close()">
+                {{ "Schließen" if lang == 'de' else "Close" }}
+            </button>
+        </footer>
+    </article>
+</dialog>
+
+{% if health_blocked %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById('healthWarningModal');
+    if (modal) modal.showModal();
+});
+</script>
+{% endif %}
+
+<!-- DSGVO Modal -->
+<dialog id="dsgvoModal" class="modal">
+    <article>
+        <header>
+            <button aria-label="Close" rel="prev" onclick="document.getElementById('dsgvoModal').close()"></button>
+            <h3>{{ "Datenschutzerklärung" if lang == 'de' else "Privacy Policy" }}</h3>
+        </header>
+        <p>
+            {% if lang == 'de' %}
+            Ihre personenbezogenen Daten (Name, Firma, Ansprechpartner, Besuchszeiten) werden
+            ausschließlich zum Zweck der Besucherdokumentation und Gebäudesicherheit erfasst und
+            verarbeitet. Die Daten werden nach Ablauf der gesetzlichen Aufbewahrungsfrist
+            automatisch gelöscht. Sie haben das Recht auf Auskunft, Berichtigung und Löschung
+            Ihrer Daten gemäß DSGVO Art. 15-17.
+            {% else %}
+            Your personal data (name, company, contact person, visit times) is collected and
+            processed solely for visitor documentation and building security purposes. Data will
+            be automatically deleted after the statutory retention period. You have the right to
+            access, rectify, and delete your data according to GDPR Articles 15-17.
+            {% endif %}
+        </p>
+        <footer>
+            <button onclick="document.getElementById('dsgvoModal').close()">
+                {{ "Schließen" if lang == 'de' else "Close" }}
+            </button>
+        </footer>
+    </article>
+</dialog>
+{% endblock %}

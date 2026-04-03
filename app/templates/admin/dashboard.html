@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}GateKeeper - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h2>Besucher-Dashboard</h2>
+        <div class="admin-actions">
+            <span class="badge badge-info">Aktuell vor Ort: {{ on_site_count }}</span>
+            <form method="POST" action="{{ url_for('admin.emergency_send') }}" style="display:inline;"
+                  onsubmit="return confirm('Notfall-Evakuierungsliste jetzt an alle Notfall-Kontakte senden?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm" style="background:#dc2626;color:white;font-weight:700;">
+                    &#128680; Notfall-Liste senden
+                </button>
+            </form>
+            <a href="{{ url_for('admin.pages_list') }}" class="btn btn-secondary btn-sm">Seiten verwalten</a>
+            <a href="{{ url_for('admin.smtp_settings') }}" class="btn btn-secondary btn-sm">E-Mail / SMTP</a>
+            <a href="{{ url_for('admin.logout') }}" class="btn btn-secondary btn-sm">Abmelden</a>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-card">
+        <form method="GET" action="{{ url_for('admin.dashboard') }}" class="filter-form">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label for="date_from">Von</label>
+                    {{ form.date_from(id="date_from", class="form-input") }}
+                </div>
+                <div class="form-group">
+                    <label for="date_to">Bis</label>
+                    {{ form.date_to(id="date_to", class="form-input") }}
+                </div>
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    {{ form.status(id="status", class="form-input") }}
+                </div>
+                <div class="form-group">
+                    <label for="search">Suche</label>
+                    {{ form.search(id="search", placeholder="Name, Firma...", class="form-input") }}
+                </div>
+            </div>
+            <div class="filter-buttons">
+                {{ form.submit(class="btn btn-primary btn-sm") }}
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">Zurücksetzen</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Export -->
+    <div class="export-bar">
+        <span>{{ visitors | length }} Ergebnis(se)</span>
+        <a href="{{ url_for('admin.export_csv', **request.args) }}" class="btn btn-secondary btn-sm">
+            CSV Export
+        </a>
+    </div>
+
+    <!-- Visitor Table -->
+    <div class="table-container">
+        <table class="visitor-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Firma</th>
+                    <th>Ansprechpartner</th>
+                    <th>KFZ</th>
+                    <th>Ankunft</th>
+                    <th>Abfahrt</th>
+                    <th>PIN</th>
+                    <th>Signatur</th>
+                    <th>Fragebogen</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in visitors %}
+                <tr>
+                    <td>{{ v.first_name }} {{ v.last_name }}</td>
+                    <td>{{ v.company }}</td>
+                    <td>{{ v.contact_person }}</td>
+                    <td>{{ v.license_plate if v.license_plate else '—' }}</td>
+                    <td>{{ v.arrival_time.strftime('%d.%m.%Y %H:%M') if v.arrival_time }}</td>
+                    <td>{{ v.departure_time.strftime('%d.%m.%Y %H:%M') if v.departure_time else '—' }}</td>
+                    <td>
+                        {% if not v.departure_time %}
+                        <code class="pin-reveal" title="PIN anzeigen" style="cursor:pointer;background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:0.85rem;">{{ v.pin }}</code>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if v.signature_data %}
+                        <button type="button" class="btn btn-secondary btn-sm"
+                                onclick="document.getElementById('sig-{{ v.id }}').showModal()">
+                            Anzeigen
+                        </button>
+                        <dialog id="sig-{{ v.id }}" class="modal">
+                            <article>
+                                <header>
+                                    <button aria-label="Close" rel="prev"
+                                            onclick="document.getElementById('sig-{{ v.id }}').close()"></button>
+                                    <h3>Unterschrift: {{ v.first_name }} {{ v.last_name }}</h3>
+                                </header>
+                                <div class="signature-preview">
+                                    <img src="{{ v.signature_data }}" alt="Unterschrift">
+                                </div>
+                                <footer>
+                                    <button onclick="document.getElementById('sig-{{ v.id }}').close()">Schließen</button>
+                                </footer>
+                            </article>
+                        </dialog>
+                        {% else %}
+                        <span class="text-muted">Keine</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% set qs = [v.q1_flu, v.q2_diarrhea, v.q3_food_poisoning, v.q4_parasites, v.q5_ent, v.q6_skin] %}
+                        {% if qs | select('none') | list | length == 6 %}
+                        <span class="text-muted">—</span>
+                        {% elif qs | select | list | length > 0 %}
+                        <button type="button" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:none;cursor:pointer;"
+                                onclick="document.getElementById('fragen-{{ v.id }}').showModal()">
+                            &#9888; Auffällig
+                        </button>
+                        {% else %}
+                        <button type="button" class="btn btn-sm" style="background:#dcfce7;color:#166534;border:none;cursor:pointer;"
+                                onclick="document.getElementById('fragen-{{ v.id }}').showModal()">
+                            &#10003; OK
+                        </button>
+                        {% endif %}
+                        <dialog id="fragen-{{ v.id }}" class="modal">
+                            <article>
+                                <header>
+                                    <button aria-label="Close" rel="prev"
+                                            onclick="document.getElementById('fragen-{{ v.id }}').close()"></button>
+                                    <h3>Fragebogen: {{ v.first_name }} {{ v.last_name }}</h3>
+                                </header>
+                                <table style="width:100%;font-size:0.875rem;">
+                                    <tbody>
+                                        <tr>
+                                            <td>1. Erkältungskrankheiten</td>
+                                            <td><strong>{{ "Ja" if v.q1_flu == True else ("Nein" if v.q1_flu == False else "—") }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>2. Durchfall / Erbrechen</td>
+                                            <td><strong>{{ "Ja" if v.q2_diarrhea == True else ("Nein" if v.q2_diarrhea == False else "—") }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>3. Lebensmittelvergiftung</td>
+                                            <td><strong>{{ "Ja" if v.q3_food_poisoning == True else ("Nein" if v.q3_food_poisoning == False else "—") }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>4. Parasitäre Infektionen</td>
+                                            <td><strong>{{ "Ja" if v.q4_parasites == True else ("Nein" if v.q4_parasites == False else "—") }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>5. HNO-Infektionen</td>
+                                            <td><strong>{{ "Ja" if v.q5_ent == True else ("Nein" if v.q5_ent == False else "—") }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td>6. Hauterkrankungen / Wunden</td>
+                                            <td><strong>{{ "Ja" if v.q6_skin == True else ("Nein" if v.q6_skin == False else "—") }}</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <footer>
+                                    <button onclick="document.getElementById('fragen-{{ v.id }}').close()">Schließen</button>
+                                </footer>
+                            </article>
+                        </dialog>
+                    </td>
+                    <td>
+                        {% if v.missed_checkout %}
+                        <span class="badge badge-danger">Kein Checkout</span>
+                        {% elif v.is_on_site %}
+                        <span class="badge badge-success">Vor Ort</span>
+                        {% else %}
+                        <span class="badge badge-neutral">Abgereist</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="10" class="empty-table">Keine Besucher gefunden.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

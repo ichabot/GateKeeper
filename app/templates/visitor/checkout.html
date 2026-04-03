@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% set lang = session.get('lang', 'de') %}
+
+{% block title %}GateKeeper - {{ "Auschecken" if lang == 'de' else "Check Out" }}{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card checkout-card">
+        <h2>{{ "Auschecken" if lang == 'de' else "Check Out" }}</h2>
+        <p class="form-subtitle">
+            {{ "Bitte geben Sie Ihren 4-stelligen PIN ein" if lang == 'de' else "Please enter your 4-digit PIN" }}
+        </p>
+
+        <form method="POST" action="{{ url_for('visitor.checkout') }}" id="checkoutForm">
+            {{ form.hidden_tag() }}
+
+            <!-- PIN Display Dots -->
+            <div class="pin-input-display">
+                <div class="pin-dot" id="dot0"></div>
+                <div class="pin-dot" id="dot1"></div>
+                <div class="pin-dot" id="dot2"></div>
+                <div class="pin-dot" id="dot3"></div>
+            </div>
+
+            <!-- Hidden actual input -->
+            {{ form.pin(id="pinInput", class="pin-hidden-input", autocomplete="off", inputmode="none") }}
+
+            <!-- Numpad -->
+            <div class="numpad">
+                <button type="button" class="numpad-btn" onclick="numpadPress('1')">1</button>
+                <button type="button" class="numpad-btn" onclick="numpadPress('2')">2</button>
+                <button type="button" class="numpad-btn" onclick="numpadPress('3')">3</button>
+                <button type="button" class="numpad-btn" onclick="numpadPress('4')">4</button>
+                <button type="button" class="numpad-btn" onclick="numpadPress('5')">5</button>
+                <button type="button" class="numpad-btn" onclick="numpadPress('6')">6</button>
+                <button type="button" class="numpad-btn" onclick="numpadPress('7')">7</button>
+                <button type="button" class="numpad-btn" onclick="numpadPress('8')">8</button>
+                <button type="button" class="numpad-btn" onclick="numpadPress('9')">9</button>
+                <button type="button" class="numpad-btn numpad-clear" onclick="numpadClear()">
+                    &#9003;
+                </button>
+                <button type="button" class="numpad-btn" onclick="numpadPress('0')">0</button>
+                <button type="submit" class="numpad-btn numpad-submit" id="numpadSubmit" disabled>
+                    &#10003;
+                </button>
+            </div>
+
+            {% if form.pin.errors %}
+            <small class="error-text">{{ form.pin.errors[0] }}</small>
+            {% endif %}
+        </form>
+
+        <div class="form-actions" style="margin-top: 1.5rem;">
+            <a href="{{ url_for('visitor.home') }}" class="btn btn-secondary">
+                {{ "Abbrechen" if lang == 'de' else "Cancel" }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

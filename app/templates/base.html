@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="{{ session.get('lang', 'de') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}GateKeeper{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=8">
+</head>
+<body>
+    <!-- Side Navigation Overlay -->
+    <div class="side-nav-overlay" id="sideNavOverlay" onclick="closeSideNav()"></div>
+    <aside class="side-nav" id="sideNav">
+        <div class="side-nav-header">
+            <span>{{ "Informationen" if session.get('lang', 'de') == 'de' else "Information" }}</span>
+            <button class="side-nav-close" onclick="closeSideNav()" aria-label="Close">&times;</button>
+        </div>
+        <div class="side-nav-links">
+            <a href="{{ url_for('visitor.checkin') }}" class="side-nav-link" onclick="closeSideNav()">
+                <span class="nav-icon">&#10133;</span>
+                <span>{{ "Einchecken" if session.get('lang', 'de') == 'de' else "Check In" }}</span>
+            </a>
+            <a href="{{ url_for('visitor.checkout') }}" class="side-nav-link" onclick="closeSideNav()">
+                <span class="nav-icon">&#10132;</span>
+                <span>{{ "Auschecken" if session.get('lang', 'de') == 'de' else "Check Out" }}</span>
+            </a>
+            <div class="side-nav-divider"></div>
+            <a href="{{ url_for('visitor.info_page', slug='emergency_contacts') }}" class="side-nav-link">
+                <span class="nav-icon">&#128100;</span>
+                <span>{{ "Kontakte" if session.get('lang', 'de') == 'de' else "Contacts" }}</span>
+            </a>
+            <a href="{{ url_for('visitor.info_page', slug='emergency_plans') }}" class="side-nav-link">
+                <span class="nav-icon">&#128203;</span>
+                <span>{{ "Notfallpläne" if session.get('lang', 'de') == 'de' else "Emergency Plans" }}</span>
+            </a>
+            <a href="{{ url_for('visitor.info_page', slug='emergency_numbers') }}" class="side-nav-link">
+                <span class="nav-icon">&#128680;</span>
+                <span>{{ "Notrufnummern" if session.get('lang', 'de') == 'de' else "Emergency Numbers" }}</span>
+            </a>
+            <a href="{{ url_for('visitor.info_page', slug='visitor_info') }}" class="side-nav-link">
+                <span class="nav-icon">&#8505;</span>
+                <span>{{ "Besucherinformationen" if session.get('lang', 'de') == 'de' else "Visitor Information" }}</span>
+            </a>
+            <a href="{{ url_for('visitor.info_page', slug='hygiene_rules') }}" class="side-nav-link">
+                <span class="nav-icon">&#129529;</span>
+                <span>{{ "Hygieneregeln" if session.get('lang', 'de') == 'de' else "Hygiene Rules" }}</span>
+            </a>
+            <a href="{{ url_for('visitor.info_page', slug='safety_conduct') }}" class="side-nav-link">
+                <span class="nav-icon">&#9888;</span>
+                <span>{{ "Sicherheits-/Verhaltenshinweise" if session.get('lang', 'de') == 'de' else "Rules of safety / conduct" }}</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-left">
+            <button class="hamburger-btn" onclick="toggleSideNav()" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="{{ url_for('visitor.home') }}" class="logo-link">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="company-logo"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="logo-placeholder" style="display:none;">
+                    <span>LOGO</span>
+                </div>
+            </a>
+            <span class="app-title">GateKeeper</span>
+        </div>
+        <div class="header-right">
+            <div class="lang-switcher">
+                <a href="{{ url_for('visitor.set_language', lang_code='de') }}"
+                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'de' }}">DE</a>
+                <a href="{{ url_for('visitor.set_language', lang_code='en') }}"
+                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'en' }}">EN</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+        {% for category, message in messages %}
+        <div class="flash-message flash-{{ category }}">
+            {{ message }}
+            <button onclick="this.parentElement.remove()" class="flash-close">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="app-main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <small>GateKeeper &copy; {{ now().year if now is defined else "2026" }} &mdash; Besuchermanagement</small>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=8"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

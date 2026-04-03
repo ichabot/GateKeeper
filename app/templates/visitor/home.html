@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% set lang = session.get('lang', 'de') %}
+
+{% block title %}GateKeeper - {{ "Willkommen" if lang == 'de' else "Welcome" }}{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <div class="welcome-card">
+        <h1>{{ "Willkommen" if lang == 'de' else "Welcome" }}</h1>
+        <p class="welcome-subtitle">
+            {{ "Bitte melden Sie sich an oder ab" if lang == 'de' else "Please check in or check out" }}
+        </p>
+
+        <div class="home-buttons">
+            <a href="{{ url_for('visitor.checkin') }}" class="btn btn-checkin">
+                <span class="btn-icon">&#10133;</span>
+                <span class="btn-label">{{ "Einchecken" if lang == 'de' else "Check In" }}</span>
+                <span class="btn-desc">{{ "Ich komme an" if lang == 'de' else "I'm arriving" }}</span>
+            </a>
+            <a href="{{ url_for('visitor.checkout') }}" class="btn btn-checkout">
+                <span class="btn-icon">&#10132;</span>
+                <span class="btn-label">{{ "Auschecken" if lang == 'de' else "Check Out" }}</span>
+                <span class="btn-desc">{{ "Ich gehe" if lang == 'de' else "I'm leaving" }}</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
