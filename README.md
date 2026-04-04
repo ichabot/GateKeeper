@@ -152,7 +152,8 @@ GateKeeper/
 │   └── translations/            # Flask-Babel Translation Files
 ├── deploy/
 │   ├── gatekeeper.conf          # Apache VHost Configuration (reference)
-│   └── setup.sh                 # Ubuntu Deployment Script
+│   ├── setup.sh                 # Production Deployment Script
+│   └── upgrade.sh               # Upgrade existing installation
 ├── database/
 │   └── schema.sql               # SQL Schema Reference (documentation)
 ├── config.py                    # Flask Config (Development / Production)
@@ -209,6 +210,27 @@ The `deploy/setup.sh` script performs the following steps:
 8. Installs cron jobs (DSGVO cleanup + monthly email report)
 
 After setup, Apache runs GateKeeper automatically — including after reboot.
+
+---
+
+## 🔄 Upgrade
+
+To update an existing installation to the latest version:
+
+```bash
+sudo bash /opt/gatekeeper/deploy/upgrade.sh
+```
+
+This pulls the latest code, updates dependencies, and restarts Apache. Your database, `.env` configuration, and logo are preserved.
+
+**Manual upgrade** (same steps):
+
+```bash
+cd /opt/gatekeeper
+sudo -u gatekeeper git pull origin main
+sudo -u gatekeeper bash -c "source venv/bin/activate && pip install -r requirements.txt"
+sudo systemctl restart apache2
+```
 
 ---
 
