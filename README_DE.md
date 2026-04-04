@@ -73,7 +73,7 @@ Dieses Projekt wurde mit KI-Unterstützung entwickelt („Vibe Coding") und nutz
 
 ## 🚀 Installation
 
-### Linux (Ubuntu / Debian)
+> **Hinweis:** GateKeeper läuft unter Linux (Ubuntu / Debian). Windows wird nicht unterstützt.
 
 ```bash
 # 1. System-Pakete installieren (falls nicht vorhanden)
@@ -96,27 +96,6 @@ cp .env.example .env
 # Optional: SECRET_KEY in .env anpassen
 
 # 6. Starten
-flask run
-```
-
-### Windows
-
-```bash
-# Repository klonen
-git clone https://github.com/ichabot/GateKeeper.git
-cd GateKeeper
-
-# Virtual Environment erstellen und aktivieren
-python -m venv venv
-venv\Scripts\activate
-
-# Dependencies installieren
-pip install -r requirements.txt
-
-# .env Datei anlegen
-copy .env.example .env
-
-# Starten
 flask run
 ```
 
