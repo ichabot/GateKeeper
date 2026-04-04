@@ -73,47 +73,54 @@ This project was developed with AI assistance ("vibe coding") and uses third-par
 
 ## 🚀 Installation
 
-> **Note:** GateKeeper runs on Linux (Ubuntu / Debian). Windows is not supported.
+> **Note:** GateKeeper runs on Linux (Ubuntu 22.04+ / Debian 12+). Windows is not supported.
+
+### Production Deployment (recommended)
+
+One command installs everything — system packages, Apache, Python dependencies, database, cron jobs:
 
 ```bash
-# 1. Install system packages (if not already present)
-sudo apt update
+sudo apt update && sudo apt install -y git
+git clone https://github.com/ichabot/GateKeeper.git /opt/gatekeeper
+sudo bash /opt/gatekeeper/deploy/setup.sh
+```
+
+The app is then available at **http://your-server-ip** (port 80).
+
+Alternatively, run the setup script directly without cloning first:
+
+```bash
+curl -sL https://raw.githubusercontent.com/ichabot/GateKeeper/main/deploy/setup.sh | sudo bash
+```
+
+### Development (local testing)
+
+```bash
 sudo apt install -y python3 python3-venv python3-pip git
 
-# 2. Clone the repository
 git clone https://github.com/ichabot/GateKeeper.git
 cd GateKeeper
-
-# 3. Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate
-
-# 4. Install dependencies
 pip install -r requirements.txt
-
-# 5. Create .env file
 cp .env.example .env
-# Optional: edit SECRET_KEY in .env
-
-# 6. Start the application
 flask run
 ```
 
-The app is then available at **http://localhost:5000**.
-
-> **Note:** The SQLite database (`instance/gatekeeper.db`) is created automatically on first start. An admin user (`admin` / `admin`) and default info pages are also created automatically.
+The dev server is then available at **http://localhost:5000** (local access only).
 
 ### Default Admin Access
 
 | | |
 |---|---|
-| URL | http://localhost:5000/admin/login |
+| URL | `http://your-server-ip/admin/login` |
 | Username | `admin` |
 | Password | `admin` |
 
-**Important:** Change the password in production:
+**Important:** Change the password after setup:
 
 ```bash
+cd /opt/gatekeeper && source venv/bin/activate
 flask seed-admin --username admin --password <new-password>
 ```
 
@@ -188,56 +195,20 @@ GateKeeper/
 
 ---
 
-## 🖥️ Deployment on Ubuntu / Apache
+## 🖥️ What the Setup Script Does
 
-### Quick Installation
+The `deploy/setup.sh` script performs the following steps:
 
-```bash
-# 1. Copy files to server
-sudo mkdir -p /opt/gatekeeper
-sudo git clone https://github.com/ichabot/GateKeeper.git /opt/gatekeeper
+1. Installs system packages (Python3, Apache2, mod_wsgi, git)
+2. Creates a dedicated `gatekeeper` system user
+3. Clones the repository to `/opt/gatekeeper` (or uses existing files)
+4. Creates Python virtual environment + installs dependencies
+5. Generates `.env` with random SECRET_KEY + SQLite database path
+6. Initializes database (tables, default admin user, seed data)
+7. Configures Apache VirtualHost on port 80
+8. Installs cron jobs (DSGVO cleanup + monthly email report)
 
-# 2. Run setup script
-sudo bash /opt/gatekeeper/deploy/setup.sh
-```
-
-The script automatically:
-- Installs system packages (Python3, Apache, mod_wsgi)
-- Creates Python virtual environment + installs dependencies
-- Creates `.env` file with generated secret key and SQLite path
-- Creates database tables + admin user + default pages
-- Configures and starts Apache
-
-### Manual Setup
-
-1. **System packages:**
-   ```bash
-   sudo apt-get update -y
-   sudo apt-get install -y python3 python3-venv python3-dev \
-       apache2 libapache2-mod-wsgi-py3
-   ```
-
-2. **Set up the app:**
-   ```bash
-   cd /opt/gatekeeper
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   cp .env.example .env
-   # Edit .env: set SECRET_KEY
-   # DATABASE_URL=sqlite:////opt/gatekeeper/instance/gatekeeper.db
-   mkdir -p instance
-   flask seed-admin --username admin
-   ```
-
-3. **Apache:**
-   ```bash
-   sudo a2enmod ssl headers wsgi expires
-   sudo cp deploy/gatekeeper.conf /etc/apache2/sites-available/
-   sudo a2dissite 000-default
-   sudo a2ensite gatekeeper
-   sudo systemctl reload apache2
-   ```
+After setup, Apache runs GateKeeper automatically — including after reboot.
 
 ---
 

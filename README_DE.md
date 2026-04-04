@@ -73,47 +73,54 @@ Dieses Projekt wurde mit KI-Unterstützung entwickelt („Vibe Coding") und nutz
 
 ## 🚀 Installation
 
-> **Hinweis:** GateKeeper läuft unter Linux (Ubuntu / Debian). Windows wird nicht unterstützt.
+> **Hinweis:** GateKeeper läuft unter Linux (Ubuntu 22.04+ / Debian 12+). Windows wird nicht unterstützt.
+
+### Produktiv-Deployment (empfohlen)
+
+Ein Befehl installiert alles — System-Pakete, Apache, Python-Dependencies, Datenbank, Cron-Jobs:
 
 ```bash
-# 1. System-Pakete installieren (falls nicht vorhanden)
-sudo apt update
+sudo apt update && sudo apt install -y git
+git clone https://github.com/ichabot/GateKeeper.git /opt/gatekeeper
+sudo bash /opt/gatekeeper/deploy/setup.sh
+```
+
+Die App ist dann unter **http://deine-server-ip** (Port 80) erreichbar.
+
+Alternativ kann das Setup-Script direkt ohne vorheriges Klonen ausgeführt werden:
+
+```bash
+curl -sL https://raw.githubusercontent.com/ichabot/GateKeeper/main/deploy/setup.sh | sudo bash
+```
+
+### Entwicklung (lokales Testen)
+
+```bash
 sudo apt install -y python3 python3-venv python3-pip git
 
-# 2. Repository klonen
 git clone https://github.com/ichabot/GateKeeper.git
 cd GateKeeper
-
-# 3. Virtual Environment erstellen und aktivieren
 python3 -m venv venv
 source venv/bin/activate
-
-# 4. Dependencies installieren
 pip install -r requirements.txt
-
-# 5. .env Datei anlegen
 cp .env.example .env
-# Optional: SECRET_KEY in .env anpassen
-
-# 6. Starten
 flask run
 ```
 
-Die App ist dann unter **http://localhost:5000** erreichbar.
-
-> **Hinweis:** Die SQLite-Datenbank (`instance/gatekeeper.db`) wird automatisch beim ersten Start erstellt. Ein Admin-Benutzer (`admin` / `admin`) und die Standard-Infoseiten werden ebenfalls automatisch angelegt.
+Der Entwicklungsserver ist dann unter **http://localhost:5000** erreichbar (nur lokaler Zugriff).
 
 ### Standard-Admin-Zugang
 
 | | |
 |---|---|
-| URL | http://localhost:5000/admin/login |
+| URL | `http://deine-server-ip/admin/login` |
 | Benutzername | `admin` |
 | Passwort | `admin` |
 
-**Wichtig:** Passwort in Produktion ändern:
+**Wichtig:** Passwort nach dem Setup ändern:
 
 ```bash
+cd /opt/gatekeeper && source venv/bin/activate
 flask seed-admin --username admin --password <neues-passwort>
 ```
 
@@ -188,56 +195,20 @@ GateKeeper/
 
 ---
 
-## 🖥️ Deployment auf Ubuntu / Apache
+## 🖥️ Was das Setup-Script macht
 
-### Schnellinstallation
+Das `deploy/setup.sh` führt folgende Schritte aus:
 
-```bash
-# 1. Dateien auf den Server kopieren
-sudo mkdir -p /opt/gatekeeper
-sudo git clone https://github.com/ichabot/GateKeeper.git /opt/gatekeeper
+1. System-Pakete installieren (Python3, Apache2, mod_wsgi, git)
+2. Eigenen `gatekeeper` System-Benutzer anlegen
+3. Repository nach `/opt/gatekeeper` klonen (oder vorhandene Dateien nutzen)
+4. Python Virtual Environment erstellen + Dependencies installieren
+5. `.env`-Datei mit zufälligem SECRET_KEY + SQLite-Pfad generieren
+6. Datenbank initialisieren (Tabellen, Admin-User, Seed-Daten)
+7. Apache VirtualHost auf Port 80 konfigurieren
+8. Cron-Jobs installieren (DSGVO-Cleanup + monatlicher E-Mail-Report)
 
-# 2. Setup-Script ausführen
-sudo bash /opt/gatekeeper/deploy/setup.sh
-```
-
-Das Script erledigt automatisch:
-- System-Pakete installieren (Python3, Apache, mod_wsgi)
-- Python Virtual Environment erstellen + Dependencies installieren
-- `.env`-Datei mit generiertem Secret Key und SQLite-Pfad erstellen
-- Datenbank-Tabellen anlegen + Admin-User + Standard-Seiten anlegen
-- Apache konfigurieren und starten
-
-### Manuelles Setup
-
-1. **System-Pakete:**
-   ```bash
-   sudo apt-get update -y
-   sudo apt-get install -y python3 python3-venv python3-dev \
-       apache2 libapache2-mod-wsgi-py3
-   ```
-
-2. **App einrichten:**
-   ```bash
-   cd /opt/gatekeeper
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   cp .env.example .env
-   # .env anpassen: SECRET_KEY setzen
-   # DATABASE_URL=sqlite:////opt/gatekeeper/instance/gatekeeper.db
-   mkdir -p instance
-   flask seed-admin --username admin
-   ```
-
-3. **Apache:**
-   ```bash
-   sudo a2enmod ssl headers wsgi expires
-   sudo cp deploy/gatekeeper.conf /etc/apache2/sites-available/
-   sudo a2dissite 000-default
-   sudo a2ensite gatekeeper
-   sudo systemctl reload apache2
-   ```
+Nach dem Setup läuft Apache mit GateKeeper automatisch — auch nach einem Neustart.
 
 ---
 
