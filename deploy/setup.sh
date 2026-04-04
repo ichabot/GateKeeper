@@ -203,11 +203,16 @@ CRON_FILE="/etc/cron.d/gatekeeper"
 if [ ! -f "$CRON_FILE" ]; then
     cat > "$CRON_FILE" <<'CRONEOF'
 # GateKeeper - automated tasks
+SHELL=/bin/bash
+FLASK_APP=wsgi.py
+GATEKEEPER_ENV=production
+
 # DSGVO: delete visitor data older than 90 days (daily at 2:00 AM)
 0 2 * * * gatekeeper cd /opt/gatekeeper && venv/bin/flask cleanup-visitors --days 90
 
 # Monthly visitor report via email (1st of month at 7:00 AM)
 0 7 1 * * gatekeeper cd /opt/gatekeeper && venv/bin/flask send-monthly-report
+
 CRONEOF
     chmod 644 "$CRON_FILE"
     echo ""

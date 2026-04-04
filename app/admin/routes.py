@@ -19,7 +19,7 @@ from app import to_berlin
 from app.admin import admin_bp
 from app.admin.forms import EditPageForm, FilterForm, HealthQuestionForm, LoginForm, SmtpSettingsForm
 from app.extensions import db
-from app.mail import send_monthly_report, send_emergency_report
+from app.mail import get_previous_month, send_monthly_report, send_emergency_report
 from app.models import AdminUser, HealthQuestion, SmtpSettings, StaticPage, Visitor
 
 
@@ -322,10 +322,10 @@ def smtp_test():
         flash("Bitte zuerst SMTP-Einstellungen speichern.", "error")
         return redirect(url_for("admin.smtp_settings"))
 
-    now = datetime.now(timezone.utc)
-    ok, err = send_monthly_report(settings, now.year, now.month)
+    year, month = get_previous_month()
+    ok, err = send_monthly_report(settings, year, month)
     if ok:
-        flash(f"Test-E-Mail erfolgreich gesendet an: {settings.smtp_recipients}", "success")
+        flash(f"Test-E-Mail (Vormonat) erfolgreich gesendet an: {settings.smtp_recipients}", "success")
     else:
         flash(f"Fehler beim Senden: {err}", "error")
     return redirect(url_for("admin.smtp_settings"))
@@ -339,12 +339,7 @@ def smtp_send_report():
         flash("SMTP nicht konfiguriert.", "error")
         return redirect(url_for("admin.smtp_settings"))
 
-    now = datetime.now(timezone.utc)
-    if now.month == 1:
-        year, month = now.year - 1, 12
-    else:
-        year, month = now.year, now.month - 1
-
+    year, month = get_previous_month()
     month_names = [
         "Januar", "Februar", "März", "April", "Mai", "Juni",
         "Juli", "August", "September", "Oktober", "November", "Dezember",

@@ -10,7 +10,7 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from app import to_berlin
+from app import BERLIN_TZ, to_berlin
 
 
 def _fmt_berlin(dt):
@@ -18,6 +18,28 @@ def _fmt_berlin(dt):
     if dt is None:
         return "—"
     return to_berlin(dt).strftime("%d.%m.%Y %H:%M")
+
+
+def get_previous_month(now=None):
+    """Return (year, month) for the previous month. Handles Jan->Dec rollover."""
+    if now is None:
+        now = datetime.now(timezone.utc)
+    if now.month == 1:
+        return now.year - 1, 12
+    return now.year, now.month - 1
+
+
+def _smtp_connect(settings):
+    """Create and authenticate an SMTP connection."""
+    if settings.use_tls:
+        server = smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30)
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+    else:
+        server = smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=30)
+    server.login(settings.smtp_user, settings.smtp_password)
+    return server
 
 _MONTH_NAMES_DE = [
     "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -84,29 +106,31 @@ def send_emergency_report(settings) -> tuple[bool, str | None]:
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain", "utf-8"))
 
+    server = None
     try:
-        if settings.use_tls:
-            server = smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30)
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-        else:
-            server = smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=30)
-        server.login(settings.smtp_user, settings.smtp_password)
+        server = _smtp_connect(settings)
         server.send_message(msg)
-        server.quit()
         return True, None
     except Exception as exc:
         return False, str(exc)
+    finally:
+        if server:
+            try:
+                server.quit()
+            except Exception:
+                pass
 
 
 def build_monthly_csv(year: int, month: int) -> tuple[str, int]:
     """Return (csv_string, visitor_count) for the given year/month."""
     from app.models import HealthQuestion, Visitor  # lazy import avoids circular dependency
 
-    start = datetime(year, month, 1, tzinfo=timezone.utc)
+    # Calculate month boundaries in Berlin timezone, then convert to UTC for DB query
     last_day = monthrange(year, month)[1]
-    end = datetime(year, month, last_day, 23, 59, 59, tzinfo=timezone.utc)
+    berlin_start = datetime(year, month, 1, 0, 0, 0, tzinfo=BERLIN_TZ)
+    berlin_end = datetime(year, month, last_day, 23, 59, 59, tzinfo=BERLIN_TZ)
+    start = berlin_start.astimezone(timezone.utc)
+    end = berlin_end.astimezone(timezone.utc)
 
     visitors = (
         Visitor.query.filter(
@@ -181,17 +205,16 @@ def send_monthly_report(settings, year: int, month: int) -> tuple[bool, str | No
     )
     msg.attach(attachment)
 
+    server = None
     try:
-        if settings.use_tls:
-            server = smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30)
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-        else:
-            server = smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=30)
-        server.login(settings.smtp_user, settings.smtp_password)
+        server = _smtp_connect(settings)
         server.send_message(msg)
-        server.quit()
         return True, None
     except Exception as exc:
         return False, str(exc)
+    finally:
+        if server:
+            try:
+                server.quit()
+            except Exception:
+                pass

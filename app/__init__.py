@@ -328,7 +328,7 @@ def register_cli(app: Flask):
     def send_monthly_report_cmd():
         """Send previous month's visitor CSV report via SMTP (for cron use)."""
         from app.models import SmtpSettings
-        from app.mail import send_monthly_report
+        from app.mail import get_previous_month, send_monthly_report
 
         settings = db.session.get(SmtpSettings, 1)
         if not settings:
@@ -341,11 +341,7 @@ def register_cli(app: Flask):
             click.echo("ERROR: SMTP-Einstellungen unvollständig.")
             return
 
-        now = datetime.now(timezone.utc)
-        if now.month == 1:
-            year, month = now.year - 1, 12
-        else:
-            year, month = now.year, now.month - 1
+        year, month = get_previous_month()
 
         click.echo(f"Sende Besucherbericht {month:02d}/{year} ...")
         ok, err = send_monthly_report(settings, year, month)
