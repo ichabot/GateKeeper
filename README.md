@@ -73,6 +73,34 @@ This project was developed with AI assistance ("vibe coding") and uses third-par
 
 ## 🚀 Installation
 
+### Linux (Ubuntu / Debian)
+
+```bash
+# 1. Install system packages (if not already present)
+sudo apt update
+sudo apt install -y python3 python3-venv python3-pip git
+
+# 2. Clone the repository
+git clone https://github.com/ichabot/GateKeeper.git
+cd GateKeeper
+
+# 3. Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# 4. Install dependencies
+pip install -r requirements.txt
+
+# 5. Create .env file
+cp .env.example .env
+# Optional: edit SECRET_KEY in .env
+
+# 6. Start the application
+flask run
+```
+
+### Windows
+
 ```bash
 # Clone the repository
 git clone https://github.com/ichabot/GateKeeper.git
@@ -80,18 +108,13 @@ cd GateKeeper
 
 # Create and activate virtual environment
 python -m venv venv
-
-# Windows:
 venv\Scripts\activate
-# Linux/macOS:
-source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 
 # Create .env file
-cp .env.example .env
-# Optional: edit SECRET_KEY in .env
+copy .env.example .env
 
 # Start the application
 flask run
