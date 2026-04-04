@@ -1,6 +1,7 @@
 """Visitor-facing routes: check-in, check-out, info pages."""
 
-from datetime import datetime, timezone
+from collections import defaultdict
+from datetime import datetime, timedelta, timezone
 
 from flask import (
     flash,
@@ -61,6 +62,11 @@ def checkin():
 
         pin = Visitor.generate_unique_pin()
         signature = request.form.get("signature_data") or None
+
+        # Limit signature data size (max 500KB Base64)
+        if signature and len(signature) > 512_000:
+            signature = None
+
         visitor = Visitor(
             first_name=form.first_name.data.strip(),
             last_name=form.last_name.data.strip(),
@@ -93,10 +99,37 @@ def checkin_success(pin):
     return render_template("visitor/checkin_success.html", pin=pin)
 
 
+# --- Simple brute-force protection for PIN checkout ---
+_checkout_attempts = defaultdict(list)  # IP -> list of timestamps
+_CHECKOUT_MAX_ATTEMPTS = 10
+_CHECKOUT_LOCKOUT_SECONDS = 120
+
+
+def _is_checkout_rate_limited(ip: str) -> bool:
+    """Check if IP has exceeded checkout PIN attempt limit."""
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(seconds=_CHECKOUT_LOCKOUT_SECONDS)
+    _checkout_attempts[ip] = [t for t in _checkout_attempts[ip] if t > cutoff]
+    return len(_checkout_attempts[ip]) >= _CHECKOUT_MAX_ATTEMPTS
+
+
+def _record_failed_checkout(ip: str):
+    _checkout_attempts[ip].append(datetime.now(timezone.utc))
+
+
 @visitor_bp.route("/checkout", methods=["GET", "POST"])
 def checkout():
     form = CheckOutForm()
     if form.validate_on_submit():
+        ip = request.remote_addr or "unknown"
+        if _is_checkout_rate_limited(ip):
+            lang = session.get("lang", "de")
+            if lang == "de":
+                flash("Zu viele Versuche. Bitte warten Sie 2 Minuten.", "error")
+            else:
+                flash("Too many attempts. Please wait 2 minutes.", "error")
+            return render_template("visitor/checkout.html", form=form)
+
         pin = form.pin.data.strip()
         visitor = Visitor.query.filter_by(
             pin=pin, departure_time=None
@@ -104,13 +137,12 @@ def checkout():
         if visitor:
             visitor.departure_time = datetime.now(timezone.utc)
             db.session.commit()
-            return redirect(
-                url_for(
-                    "visitor.checkout_success",
-                    name=f"{visitor.first_name} {visitor.last_name}",
-                )
-            )
+            session["checkout_name"] = f"{visitor.first_name} {visitor.last_name}"
+            # Clear attempts on success
+            _checkout_attempts.pop(ip, None)
+            return redirect(url_for("visitor.checkout_success"))
         else:
+            _record_failed_checkout(ip)
             lang = session.get("lang", "de")
             if lang == "de":
                 flash("Ungültiger PIN. Bitte versuchen Sie es erneut.", "error")
@@ -121,7 +153,7 @@ def checkout():
 
 @visitor_bp.route("/checkout/success")
 def checkout_success():
-    name = request.args.get("name", "")
+    name = session.pop("checkout_name", "")
     return render_template("visitor/checkout_success.html", name=name)
 
 

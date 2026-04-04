@@ -171,9 +171,9 @@ function initSignaturePad() {
                 } else {
                     // Re-render the page (validation errors)
                     response.text().then(function (html) {
-                        document.open();
-                        document.write(html);
-                        document.close();
+                        var parser = new DOMParser();
+                        var doc = parser.parseFromString(html, 'text/html');
+                        document.documentElement.innerHTML = doc.documentElement.innerHTML;
                     });
                 }
             }).catch(function () {

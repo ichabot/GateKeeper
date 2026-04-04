@@ -83,7 +83,7 @@ ENV_FILE="${APP_DIR}/.env"
 if [ ! -f "$ENV_FILE" ]; then
     cat > "$ENV_FILE" <<ENVEOF
 FLASK_APP=wsgi.py
-FLASK_ENV=production
+GATEKEEPER_ENV=production
 SECRET_KEY=${SECRET_KEY}
 ADMIN_DEFAULT_PASSWORD=admin
 DATABASE_URL=sqlite:////opt/gatekeeper/instance/gatekeeper.db
@@ -142,7 +142,7 @@ cat > "$APACHE_CONF" <<APACHEEOF
     Header always set X-XSS-Protection "1; mode=block"
 
     SetEnv SECRET_KEY ${SECRET_KEY}
-    SetEnv FLASK_ENV production
+    SetEnv GATEKEEPER_ENV production
 
     ErrorLog \${APACHE_LOG_DIR}/gatekeeper_error.log
     CustomLog \${APACHE_LOG_DIR}/gatekeeper_access.log combined

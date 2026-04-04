@@ -102,7 +102,12 @@ Beim ersten Start automatisch geseeded (in `_seed_defaults()`):
 
 ## Coding-Konventionen
 
-- Keine PostgreSQL-abhängigen Features (Arrays, JSON-Operators etc.)
+- **SQLite only** — keine PostgreSQL-abhängigen Features (Arrays, JSON-Operators etc.)
+- Umgebungsvariable: `GATEKEEPER_ENV` (nicht FLASK_ENV, deprecated seit Flask 2.3)
+- Production-Modus verweigert Start ohne SECRET_KEY
+- Checkout-PIN hat Rate-Limiting (10 Versuche / 2 Min pro IP)
+- Signatur-Daten max. 500KB Base64
+- CSV-Export mit UTF-8 BOM-Prefix für Excel-Kompatibilität
 - Neue Formularfelder immer in forms.py, models.py UND routes.py hinzufügen
 - Neue statische Seiten in `_seed_defaults()` in `__init__.py` eintragen
 - CSS-Cache-Version in base.html hochzählen wenn style.css geändert wird (?v=N)

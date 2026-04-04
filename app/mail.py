@@ -17,19 +17,17 @@ _MONTH_NAMES_DE = [
 
 
 def send_emergency_report(settings) -> tuple[bool, str | None]:
-    """Send emergency evacuation list with visitors checked in today and still on-site.
+    """Send emergency evacuation list with ALL visitors still on-site.
 
     Returns (True, None) on success or (False, error_message) on failure.
     """
     from app.models import Visitor  # lazy import avoids circular dependency
 
     now = datetime.now(timezone.utc)
-    today_start = datetime.combine(now.date(), time.min).replace(tzinfo=timezone.utc)
 
     on_site = (
         Visitor.query.filter(
             Visitor.departure_time.is_(None),
-            Visitor.arrival_time >= today_start,
         )
         .order_by(Visitor.arrival_time.asc())
         .all()

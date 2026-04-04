@@ -11,10 +11,15 @@ from config import config_map
 
 def create_app(config_name: str | None = None) -> Flask:
     if config_name is None:
-        config_name = os.environ.get("FLASK_ENV", "development")
+        config_name = os.environ.get("GATEKEEPER_ENV", os.environ.get("FLASK_ENV", "development"))
 
     app = Flask(__name__)
-    app.config.from_object(config_map[config_name])
+    config_cls = config_map[config_name]
+    app.config.from_object(config_cls)
+
+    # Call init_app hook if config class provides one (e.g. production safety checks)
+    if hasattr(config_cls, "init_app"):
+        config_cls.init_app(app)
 
     # Initialize extensions
     from app.extensions import db, migrate, login_manager, babel, csrf

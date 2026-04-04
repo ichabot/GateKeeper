@@ -1,31 +1,31 @@
 -- ============================================================
--- GateKeeper Database Schema (PostgreSQL Reference)
+-- GateKeeper Database Schema (SQLite Reference)
 -- Note: Tables are auto-created by Flask-SQLAlchemy / Flask-Migrate
 -- This file serves as documentation only.
 -- ============================================================
 
 CREATE TABLE visitors (
-    id                  SERIAL PRIMARY KEY,
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
     first_name          VARCHAR(100)  NOT NULL,
     last_name           VARCHAR(100)  NOT NULL,
     company             VARCHAR(200)  NOT NULL,
     contact_person      VARCHAR(200)  NOT NULL,
     license_plate       VARCHAR(20)   NULL,           -- KFZ-Kennzeichen (optional)
-    pin                 CHAR(4)       NOT NULL,
-    arrival_time        TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
-    departure_time      TIMESTAMPTZ   NULL,
-    signature_data      TEXT          NULL,          -- Base64 PNG data URL
-    dsgvo_consent       BOOLEAN       NOT NULL DEFAULT FALSE,
-    hygiene_consent     BOOLEAN       NOT NULL DEFAULT FALSE,
-    safety_consent      BOOLEAN       NOT NULL DEFAULT FALSE,
-    -- Health questionnaire (TRUE = Ja/Yes, FALSE = Nein/No)
-    q1_flu              BOOLEAN       NULL,           -- Erkältungskrankheiten / Flu diseases
-    q2_diarrhea         BOOLEAN       NULL,           -- Durchfall/Erbrechen / Diarrhoea or vomiting
-    q3_food_poisoning   BOOLEAN       NULL,           -- Salmonellen etc. / Food poisoning
-    q4_parasites        BOOLEAN       NULL,           -- Parasitäre Infektionen / Parasitic infection
-    q5_ent              BOOLEAN       NULL,           -- HNO-Infektionen / ENT infections
-    q6_skin             BOOLEAN       NULL,           -- Hauterkrankungen / Skin rashes
-    created_at          TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+    pin                 VARCHAR(6)    NOT NULL,        -- 4-6 digits (dynamic length)
+    arrival_time        DATETIME      NOT NULL DEFAULT (datetime('now')),
+    departure_time      DATETIME      NULL,
+    signature_data      TEXT          NULL,            -- Base64 PNG data URL
+    dsgvo_consent       BOOLEAN       NOT NULL DEFAULT 0,
+    hygiene_consent     BOOLEAN       NOT NULL DEFAULT 0,
+    safety_consent      BOOLEAN       NOT NULL DEFAULT 0,
+    -- Legacy health questionnaire columns (kept for backward compat)
+    q1_flu              BOOLEAN       NULL,
+    q2_diarrhea         BOOLEAN       NULL,
+    q3_food_poisoning   BOOLEAN       NULL,
+    q4_parasites        BOOLEAN       NULL,
+    q5_ent              BOOLEAN       NULL,
+    q6_skin             BOOLEAN       NULL,
+    created_at          DATETIME      NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE INDEX idx_visitors_active_pin
@@ -35,15 +35,33 @@ CREATE INDEX idx_visitors_active_pin
 CREATE INDEX idx_visitors_arrival_time
     ON visitors (arrival_time);
 
+CREATE TABLE health_questions (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    position            INTEGER       NOT NULL DEFAULT 0,
+    text_de             TEXT          NOT NULL,
+    text_en             TEXT          NOT NULL DEFAULT '',
+    short_key           VARCHAR(50)   NOT NULL UNIQUE,
+    active              BOOLEAN       NOT NULL DEFAULT 1,
+    created_at          DATETIME      NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE visitor_answers (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    visitor_id          INTEGER       NOT NULL REFERENCES visitors(id),
+    question_id         INTEGER       NOT NULL REFERENCES health_questions(id),
+    answer              BOOLEAN       NOT NULL,
+    UNIQUE(visitor_id, question_id)
+);
+
 CREATE TABLE admin_users (
-    id              SERIAL PRIMARY KEY,
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
     username        VARCHAR(50)   NOT NULL UNIQUE,
     password_hash   VARCHAR(255)  NOT NULL,
-    created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+    created_at      DATETIME      NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE TABLE smtp_settings (
-    id                    SERIAL PRIMARY KEY,
+    id                    INTEGER PRIMARY KEY AUTOINCREMENT,
     smtp_host             VARCHAR(200)  NOT NULL DEFAULT '',
     smtp_port             INTEGER       NOT NULL DEFAULT 587,
     smtp_user             VARCHAR(200)  NOT NULL DEFAULT '',
@@ -51,19 +69,19 @@ CREATE TABLE smtp_settings (
     smtp_sender           VARCHAR(200)  NOT NULL DEFAULT '',
     smtp_recipients       TEXT          NOT NULL DEFAULT '',  -- Monatlicher Report-Empfänger
     emergency_recipients  TEXT          NOT NULL DEFAULT '',  -- Notfall-Evakuierungsliste-Empfänger
-    use_tls               BOOLEAN       NOT NULL DEFAULT TRUE,
-    enabled               BOOLEAN       NOT NULL DEFAULT FALSE,
-    updated_at            TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+    use_tls               BOOLEAN       NOT NULL DEFAULT 1,
+    enabled               BOOLEAN       NOT NULL DEFAULT 0,
+    updated_at            DATETIME      NOT NULL DEFAULT (datetime('now'))
 );
 
 CREATE TABLE static_pages (
-    id              SERIAL PRIMARY KEY,
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
     slug            VARCHAR(50)   NOT NULL UNIQUE,
     title_de        VARCHAR(200)  NOT NULL,
     title_en        VARCHAR(200)  NOT NULL,
     content_de      TEXT          NOT NULL DEFAULT '',
     content_en      TEXT          NOT NULL DEFAULT '',
-    updated_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+    updated_at      DATETIME      NOT NULL DEFAULT (datetime('now'))
 );
 
 INSERT INTO static_pages (slug, title_de, title_en, content_de, content_en) VALUES
@@ -76,8 +94,8 @@ INSERT INTO static_pages (slug, title_de, title_en, content_de, content_en) VALU
 
 -- Migration hints for existing installations:
 -- v1 -> v2 (Hygiene/Safety/Fragebogen):
--- ALTER TABLE visitors ADD COLUMN hygiene_consent   BOOLEAN NOT NULL DEFAULT FALSE;
--- ALTER TABLE visitors ADD COLUMN safety_consent    BOOLEAN NOT NULL DEFAULT FALSE;
+-- ALTER TABLE visitors ADD COLUMN hygiene_consent   BOOLEAN NOT NULL DEFAULT 0;
+-- ALTER TABLE visitors ADD COLUMN safety_consent    BOOLEAN NOT NULL DEFAULT 0;
 -- ALTER TABLE visitors ADD COLUMN q1_flu            BOOLEAN NULL;
 -- ALTER TABLE visitors ADD COLUMN q2_diarrhea       BOOLEAN NULL;
 -- ALTER TABLE visitors ADD COLUMN q3_food_poisoning BOOLEAN NULL;
@@ -87,3 +105,6 @@ INSERT INTO static_pages (slug, title_de, title_en, content_de, content_en) VALU
 -- v2 -> v3 (KFZ-Kennzeichen + Notfall-Empfaenger):
 -- ALTER TABLE visitors ADD COLUMN license_plate VARCHAR(20) NULL;
 -- ALTER TABLE smtp_settings ADD COLUMN emergency_recipients TEXT NOT NULL DEFAULT '';
+-- v3 -> v4 (Dynamic health questions):
+-- CREATE TABLE health_questions (...);
+-- CREATE TABLE visitor_answers (...);

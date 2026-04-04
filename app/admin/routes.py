@@ -197,7 +197,7 @@ def export_csv():
         writer.writerow(row)
 
     response = Response(
-        output.getvalue(),
+        "\ufeff" + output.getvalue(),
         mimetype="text/csv",
         headers={
             "Content-Disposition": "attachment; filename=besucher_export.csv"
