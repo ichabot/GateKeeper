@@ -12,9 +12,9 @@
 
 ## 📸 Screenshots
 
-| Home | Check-in | Admin Login | Admin Dashboard |
-|------|----------|-------------|-----------------|
-| ![Home](docs/screenshots/home.png) | ![Check-in](docs/screenshots/checkin.png) | ![Admin Login](docs/screenshots/admin-login.png) | ![Dashboard](docs/screenshots/admin-dashboard.png) |
+| Home | Check-in | Admin Dashboard |
+|------|----------|------------------|
+| ![Home](docs/screenshots/home.png) | ![Check-in](docs/screenshots/checkin.png) | ![Dashboard](docs/screenshots/admin-dashboard.png) |
 
 ---
 
