@@ -10,6 +10,14 @@
 
 ---
 
+## 📸 Screenshots
+
+| Home | Check-in | Admin Login | Admin Dashboard |
+|------|----------|-------------|-----------------|
+| ![Home](docs/screenshots/home.png) | ![Check-in](docs/screenshots/checkin.png) | ![Admin Login](docs/screenshots/admin-login.png) | ![Dashboard](docs/screenshots/admin-dashboard.png) |
+
+---
+
 ## ✨ Features
 
 - **Self-service check-in** — First name, last name, company, contact person, license plate, digital signature, GDPR consent
