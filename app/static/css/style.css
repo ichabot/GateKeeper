@@ -463,6 +463,22 @@ body {
     padding: 0.9rem 2.5rem;
 }
 
+/* --- Override Pico CSS dark form controls --- */
+input[type="checkbox"],
+input[type="radio"] {
+    appearance: auto;
+    -webkit-appearance: auto;
+    background-color: white !important;
+    border-color: #cbd5e1 !important;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    accent-color: var(--gk-primary);
+    background-color: var(--gk-primary) !important;
+    border-color: var(--gk-primary) !important;
+}
+
 /* --- Forms --- */
 .form-container {
     display: flex;
@@ -643,6 +659,11 @@ select.form-input {
     height: 20px;
     flex-shrink: 0;
     accent-color: var(--gk-primary);
+    /* Override Pico CSS dark styling */
+    appearance: auto;
+    -webkit-appearance: auto;
+    background-color: white;
+    border-color: #cbd5e1;
 }
 
 .dsgvo-label a {
@@ -1222,6 +1243,11 @@ dialog.modal footer {
     accent-color: var(--gk-primary);
     cursor: pointer;
     flex-shrink: 0;
+    /* Override Pico CSS dark styling */
+    appearance: auto;
+    -webkit-appearance: auto;
+    background-color: white;
+    border-color: #cbd5e1;
 }
 
 .questions-error {
