@@ -13,7 +13,7 @@
 ## ✨ Features
 
 - **Self-Service Check-in** — Vorname, Nachname, Firma, Ansprechpartner, KFZ-Kennzeichen, digitale Unterschrift, DSGVO-Einwilligung
-- **Gesundheitsfragebogen** — 6 Ja/Nein-Fragen (Hygiene, Infektionskrankheiten)
+- **Gesundheitsfragebogen** — Dynamische Ja/Nein-Fragen, im Admin-Bereich konfigurierbar (Hygiene, Infektionskrankheiten)
 - **Hygieneregeln & Sicherheitshinweise** — Verlinkbare Unterseiten mit Einwilligungs-Checkboxen
 - **4-stelliger PIN** — Wird beim Check-in generiert, damit checkt der Besucher beim Gehen wieder aus
 - **Touch-optimiertes Unterschriftenfeld** — Finger / Apple Pencil Support

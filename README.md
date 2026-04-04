@@ -13,7 +13,7 @@
 ## ✨ Features
 
 - **Self-service check-in** — First name, last name, company, contact person, license plate, digital signature, GDPR consent
-- **Health questionnaire** — 6 yes/no questions (hygiene, infectious diseases)
+- **Health questionnaire** — Dynamic yes/no questions, configurable in admin area (hygiene, infectious diseases)
 - **Hygiene rules & safety instructions** — Linkable subpages with consent checkboxes
 - **4-digit PIN** — Generated at check-in, used to check out when leaving
 - **Touch-optimized signature field** — Finger / Apple Pencil support

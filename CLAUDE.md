@@ -28,7 +28,7 @@ app/
   mail.py            - SMTP-Versand: monatlicher CSV-Report + Notfall-Evakuierungsliste
   visitor/
     routes.py        - Besucher-Routen (checkin, checkout, info_page, set_language)
-    forms.py         - WTForms: CheckInForm (inkl. 6 RadioFields q1-q6), CheckOutForm
+    forms.py         - WTForms: CheckInForm, CheckOutForm (health questions are dynamic, not in form)
   admin/
     routes.py        - Admin-Routen (dashboard, export, pages, smtp, emergency-send)
     forms.py         - WTForms: LoginForm, FilterForm, EditPageForm, SmtpSettingsForm
