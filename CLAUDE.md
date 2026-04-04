@@ -84,7 +84,7 @@ Beim ersten Start automatisch geseeded (in `_seed_defaults()`):
 ## Check-in-Formular Ablauf
 
 1. Personaldaten (Vorname, Nachname, Firma, Ansprechpartner, KFZ-Kennzeichen)
-2. Gesundheitsfragebogen (6 Ja/Nein RadioFields: q1-q6)
+2. Gesundheitsfragebogen (dynamische Ja/Nein-Fragen aus DB, via request.form)
 3. Unterschrift (Canvas, Base64-PNG, via JS/fetch übermittelt)
 4. DSGVO-Checkbox (öffnet Modal)
 5. Hygiene-Checkbox (Link zu `/info/hygiene_rules`, target=_blank)
