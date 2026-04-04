@@ -82,8 +82,8 @@
                     <td>{{ v.company }}</td>
                     <td>{{ v.contact_person }}</td>
                     <td>{{ v.license_plate if v.license_plate else '—' }}</td>
-                    <td>{{ v.arrival_time.strftime('%d.%m.%Y %H:%M') if v.arrival_time }}</td>
-                    <td>{{ v.departure_time.strftime('%d.%m.%Y %H:%M') if v.departure_time else '—' }}</td>
+                    <td>{{ (v.arrival_time|to_berlin).strftime('%d.%m.%Y %H:%M') if v.arrival_time }}</td>
+                    <td>{{ (v.departure_time|to_berlin).strftime('%d.%m.%Y %H:%M') if v.departure_time else '—' }}</td>
                     <td>
                         {% if not v.departure_time %}
                         <code class="pin-reveal" title="PIN anzeigen" style="cursor:pointer;background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:0.85rem;">{{ v.pin }}</code>

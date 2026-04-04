@@ -10,6 +10,15 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from app import to_berlin
+
+
+def _fmt_berlin(dt):
+    """Format a datetime in Berlin timezone as dd.mm.yyyy HH:MM."""
+    if dt is None:
+        return "—"
+    return to_berlin(dt).strftime("%d.%m.%Y %H:%M")
+
 _MONTH_NAMES_DE = [
     "Januar", "Februar", "März", "April", "Mai", "Juni",
     "Juli", "August", "September", "Oktober", "November", "Dezember",
@@ -23,7 +32,7 @@ def send_emergency_report(settings) -> tuple[bool, str | None]:
     """
     from app.models import Visitor  # lazy import avoids circular dependency
 
-    now = datetime.now(timezone.utc)
+    now_berlin = to_berlin(datetime.now(timezone.utc))
 
     on_site = (
         Visitor.query.filter(
@@ -33,7 +42,7 @@ def send_emergency_report(settings) -> tuple[bool, str | None]:
         .all()
     )
 
-    timestamp = now.strftime("%d.%m.%Y %H:%M")
+    timestamp = now_berlin.strftime("%d.%m.%Y %H:%M")
 
     subject = f"NOTFALL – Aktuelle Besucherliste ({len(on_site)} Person(en) im Gebäude) – {timestamp} Uhr"
 
@@ -48,7 +57,7 @@ def send_emergency_report(settings) -> tuple[bool, str | None]:
         lines.append("NAME                    FIRMA                   ANSPRECHPARTNER         KFZ          ANKUNFT")
         lines.append("-" * 95)
         for v in on_site:
-            arrival = v.arrival_time.strftime("%d.%m.%Y %H:%M") if v.arrival_time else "—"
+            arrival = _fmt_berlin(v.arrival_time)
             plate = v.license_plate or "—"
             lines.append(
                 f"{(v.first_name + ' ' + v.last_name):<24}"
@@ -126,8 +135,8 @@ def build_monthly_csv(year: int, month: int) -> tuple[str, int]:
         row = [
             v.first_name, v.last_name, v.company, v.contact_person,
             v.license_plate or "",
-            v.arrival_time.strftime("%d.%m.%Y %H:%M") if v.arrival_time else "",
-            v.departure_time.strftime("%d.%m.%Y %H:%M") if v.departure_time else "",
+            _fmt_berlin(v.arrival_time) if v.arrival_time else "",
+            _fmt_berlin(v.departure_time) if v.departure_time else "",
             "Vor Ort" if v.is_on_site else "Abgereist",
         ]
         answers = v.get_answers_for_csv()

@@ -2,9 +2,22 @@
 
 import os
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 import click
 from flask import Flask, request, session
+
+# Berlin timezone for display conversions
+BERLIN_TZ = ZoneInfo("Europe/Berlin")
+
+
+def to_berlin(dt):
+    """Convert a UTC datetime to Europe/Berlin for display."""
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(BERLIN_TZ)
 
 from config import config_map
 
@@ -39,6 +52,9 @@ def create_app(config_name: str | None = None) -> Flask:
         )
 
     babel.init_app(app, locale_selector=get_locale)
+
+    # Jinja2 filter for timezone conversion
+    app.jinja_env.filters["to_berlin"] = to_berlin
 
     # Make get_locale and current year available in templates
     @app.context_processor

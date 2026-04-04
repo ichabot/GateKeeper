@@ -15,11 +15,19 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
+from app import to_berlin
 from app.admin import admin_bp
 from app.admin.forms import EditPageForm, FilterForm, HealthQuestionForm, LoginForm, SmtpSettingsForm
 from app.extensions import db
 from app.mail import send_monthly_report, send_emergency_report
 from app.models import AdminUser, HealthQuestion, SmtpSettings, StaticPage, Visitor
+
+
+def _fmt_berlin(dt):
+    """Format a datetime in Berlin timezone as dd.mm.yyyy HH:MM."""
+    if dt is None:
+        return ""
+    return to_berlin(dt).strftime("%d.%m.%Y %H:%M")
 
 # --- Simple brute-force protection (in-memory) ---
 _login_attempts = defaultdict(list)  # IP -> list of timestamps
@@ -187,8 +195,8 @@ def export_csv():
             v.company,
             v.contact_person,
             v.license_plate or "",
-            v.arrival_time.strftime("%d.%m.%Y %H:%M") if v.arrival_time else "",
-            v.departure_time.strftime("%d.%m.%Y %H:%M") if v.departure_time else "",
+            _fmt_berlin(v.arrival_time),
+            _fmt_berlin(v.departure_time),
             "Vor Ort" if v.is_on_site else "Abgereist",
         ]
         answers = v.get_answers_for_csv()
