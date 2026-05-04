@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% set lang = session.get('lang', 'de') %}
 
-{% block title %}GateKeeper - {{ "Neue Frage" if is_new else "Frage bearbeiten" }}{% endblock %}
+{% block title %}GateKeeper - {{ t("new_question_create", lang) if is_new else t("edit_question", lang) }}{% endblock %}
 
 {% block content %}
 <div class="form-container">
     <div class="form-card">
-        <h2>{{ "Neue Frage erstellen" if is_new else "Frage bearbeiten" }}</h2>
+        <h2>{{ t("new_question_create", lang) if is_new else t("edit_question", lang) }}</h2>
         <p class="form-subtitle">
-            Gesundheitsfragen werden im Check-in-Formular als Ja/Nein-Fragen angezeigt.
+            {{ t("question_hint", lang) }}
         </p>
 
         <form method="POST">
@@ -68,7 +69,7 @@
             </div>
 
             <div class="form-actions">
-                <a href="{{ url_for('admin.questions_list') }}" class="btn btn-secondary">Abbrechen</a>
+                <a href="{{ url_for('admin.questions_list') }}" class="btn btn-secondary">{{ t("cancel", lang) }}</a>
                 {{ form.submit(class="btn btn-primary") }}
             </div>
         </form>

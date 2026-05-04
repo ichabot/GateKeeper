@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% set lang = session.get('lang', 'de') %}
 
-{% block title %}GateKeeper - Gesundheitsfragen{% endblock %}
+{% block title %}GateKeeper - {{ t("manage_health_questions", lang) }}{% endblock %}
 
 {% block content %}
 <div class="admin-container">
     <div class="admin-header">
-        <h2>Gesundheitsfragen verwalten</h2>
+        <h2>{{ t("manage_health_questions", lang) }}</h2>
         <div class="admin-actions">
-            <a href="{{ url_for('admin.question_new') }}" class="btn btn-primary btn-sm">+ Neue Frage</a>
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">← Dashboard</a>
+            <a href="{{ url_for('admin.question_new') }}" class="btn btn-primary btn-sm">+ {{ t("new_question", lang) }}</a>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">← {{ t("back_to_dashboard", lang) }}</a>
         </div>
     </div>
 
@@ -16,12 +17,12 @@
         <table class="visitor-table">
             <thead>
                 <tr>
-                    <th style="width:60px;">Pos.</th>
-                    <th>Frage (DE)</th>
-                    <th>Frage (EN)</th>
-                    <th style="width:100px;">Schlüssel</th>
-                    <th style="width:80px;">Status</th>
-                    <th style="width:160px;">Aktionen</th>
+                    <th style="width:60px;">{{ t("position", lang) }}</th>
+                    <th>{{ t("question_de", lang) }}</th>
+                    <th>{{ t("question_en", lang) }}</th>
+                    <th style="width:100px;">{{ t("key", lang) }}</th>
+                    <th style="width:80px;">{{ t("filter_status", lang) }}</th>
+                    <th style="width:160px;">{{ t("actions", lang) }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,23 +34,23 @@
                     <td><code>{{ q.short_key }}</code></td>
                     <td>
                         {% if q.active %}
-                        <span class="badge badge-success">Aktiv</span>
+                        <span class="badge badge-success">{{ t("active", lang) }}</span>
                         {% else %}
-                        <span class="badge badge-neutral">Inaktiv</span>
+                        <span class="badge badge-neutral">{{ t("inactive", lang) }}</span>
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{{ url_for('admin.question_edit', question_id=q.id) }}" class="btn btn-secondary btn-sm">Bearbeiten</a>
+                        <a href="{{ url_for('admin.question_edit', question_id=q.id) }}" class="btn btn-secondary btn-sm">{{ t("edit", lang) }}</a>
                         <form method="POST" action="{{ url_for('admin.question_delete', question_id=q.id) }}" style="display:inline;"
-                              onsubmit="return confirm('Frage wirklich löschen? Antworten bestehender Besucher gehen verloren.')">
+                              onsubmit="return confirm('{{ t("confirm_delete_question", lang) }}')">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:none;">Löschen</button>
+                            <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:none;">{{ t("delete", lang) }}</button>
                         </form>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" class="empty-table">Keine Fragen definiert. Klicken Sie "Neue Frage" um zu beginnen.</td>
+                    <td colspan="6" class="empty-table">{{ t("no_questions", lang) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -57,8 +58,7 @@
     </div>
 
     <div style="margin-top:1rem;padding:1rem;background:#f0f9ff;border-radius:10px;border:1px solid #bae6fd;font-size:0.875rem;color:#334155;">
-        <strong>Hinweis:</strong> Änderungen an Fragen wirken sich nur auf neue Check-ins aus.
-        Bestehende Besucher-Antworten bleiben unverändert. Inaktive Fragen werden nicht im Check-in-Formular angezeigt.
+        <strong>{{ t("information", lang) }}:</strong> {{ t("question_note", lang) }}
     </div>
 </div>
 {% endblock %}

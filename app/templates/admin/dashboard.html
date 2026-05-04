@@ -1,24 +1,25 @@
 {% extends "base.html" %}
+{% set lang = session.get('lang', 'de') %}
 
-{% block title %}GateKeeper - Admin Dashboard{% endblock %}
+{% block title %}GateKeeper - {{ t("admin_dashboard", lang) }}{% endblock %}
 
 {% block content %}
 <div class="admin-container">
     <div class="admin-header">
-        <h2>Besucher-Dashboard</h2>
+        <h2>{{ t("admin_dashboard", lang) }}</h2>
         <div class="admin-actions">
-            <span class="badge badge-info">Aktuell vor Ort: {{ on_site_count }}</span>
+            <span class="badge badge-info">{{ t("currently_on_site", lang) }}: {{ on_site_count }}</span>
             <form method="POST" action="{{ url_for('admin.emergency_send') }}" style="display:inline;"
-                  onsubmit="return confirm('Notfall-Evakuierungsliste jetzt an alle Notfall-Kontakte senden?')">
+                  onsubmit="return confirm('{{ t("emergency_confirm", lang) }}')">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-sm" style="background:#dc2626;color:white;font-weight:700;">
-                    &#128680; Notfall-Liste senden
+                    &#128680; {{ t("emergency_send", lang) }}
                 </button>
             </form>
-            <a href="{{ url_for('admin.questions_list') }}" class="btn btn-secondary btn-sm">Gesundheitsfragen</a>
-            <a href="{{ url_for('admin.pages_list') }}" class="btn btn-secondary btn-sm">Seiten verwalten</a>
-            <a href="{{ url_for('admin.smtp_settings') }}" class="btn btn-secondary btn-sm">E-Mail / SMTP</a>
-            <a href="{{ url_for('admin.logout') }}" class="btn btn-secondary btn-sm">Abmelden</a>
+            <a href="{{ url_for('admin.questions_list') }}" class="btn btn-secondary btn-sm">{{ t("health_questions", lang) }}</a>
+            <a href="{{ url_for('admin.pages_list') }}" class="btn btn-secondary btn-sm">{{ t("manage_pages", lang) }}</a>
+            <a href="{{ url_for('admin.smtp_settings') }}" class="btn btn-secondary btn-sm">{{ t("email_smtp", lang) }}</a>
+            <a href="{{ url_for('admin.logout') }}" class="btn btn-secondary btn-sm">{{ t("logout", lang) }}</a>
         </div>
     </div>
 
@@ -27,34 +28,34 @@
         <form method="GET" action="{{ url_for('admin.dashboard') }}" class="filter-form">
             <div class="filter-grid">
                 <div class="form-group">
-                    <label for="date_from">Von</label>
+                    <label for="date_from">{{ t("filter_from", lang) }}</label>
                     {{ form.date_from(id="date_from", class="form-input") }}
                 </div>
                 <div class="form-group">
-                    <label for="date_to">Bis</label>
+                    <label for="date_to">{{ t("filter_to", lang) }}</label>
                     {{ form.date_to(id="date_to", class="form-input") }}
                 </div>
                 <div class="form-group">
-                    <label for="status">Status</label>
+                    <label for="status">{{ t("filter_status", lang) }}</label>
                     {{ form.status(id="status", class="form-input") }}
                 </div>
                 <div class="form-group">
-                    <label for="search">Suche</label>
-                    {{ form.search(id="search", placeholder="Name, Firma...", class="form-input") }}
+                    <label for="search">{{ t("filter_search", lang) }}</label>
+                    {{ form.search(id="search", placeholder=t("search_placeholder", lang), class="form-input") }}
                 </div>
             </div>
             <div class="filter-buttons">
-                {{ form.submit(class="btn btn-primary btn-sm") }}
-                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">Zurücksetzen</a>
+                <button type="submit" class="btn btn-primary btn-sm">{{ t("filter_btn", lang) }}</button>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">{{ t("filter_reset", lang) }}</a>
             </div>
         </form>
     </div>
 
     <!-- Export -->
     <div class="export-bar">
-        <span>{{ visitors | length }} Ergebnis(se)</span>
+        <span>{{ visitors | length }} {{ t("results", lang) }}</span>
         <a href="{{ url_for('admin.export_csv', **request.args) }}" class="btn btn-secondary btn-sm">
-            CSV Export
+            {{ t("csv_export", lang) }}
         </a>
     </div>
 
@@ -63,16 +64,16 @@
         <table class="visitor-table">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Firma</th>
-                    <th>Ansprechpartner</th>
-                    <th>KFZ</th>
-                    <th>Ankunft</th>
-                    <th>Abfahrt</th>
-                    <th>PIN</th>
-                    <th>Signatur</th>
-                    <th>Fragebogen</th>
-                    <th>Status</th>
+                    <th>{{ t("th_name", lang) }}</th>
+                    <th>{{ t("th_company", lang) }}</th>
+                    <th>{{ t("th_contact", lang) }}</th>
+                    <th>{{ t("th_plate", lang) }}</th>
+                    <th>{{ t("th_arrival", lang) }}</th>
+                    <th>{{ t("th_departure", lang) }}</th>
+                    <th>{{ t("th_pin", lang) }}</th>
+                    <th>{{ t("th_signature", lang) }}</th>
+                    <th>{{ t("th_questionnaire", lang) }}</th>
+                    <th>{{ t("filter_status", lang) }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -86,7 +87,7 @@
                     <td>{{ (v.departure_time|to_berlin).strftime('%d.%m.%Y %H:%M') if v.departure_time else '—' }}</td>
                     <td>
                         {% if not v.departure_time %}
-                        <code class="pin-reveal" title="PIN anzeigen" style="cursor:pointer;background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:0.85rem;">{{ v.pin }}</code>
+                        <code class="pin-reveal" title="{{ t('show_pin', lang) }}" style="cursor:pointer;background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:0.85rem;">{{ v.pin }}</code>
                         {% else %}
                         <span class="text-muted">—</span>
                         {% endif %}
@@ -95,25 +96,25 @@
                         {% if v.signature_data %}
                         <button type="button" class="btn btn-secondary btn-sm"
                                 onclick="document.getElementById('sig-{{ v.id }}').showModal()">
-                            Anzeigen
+                            {{ t("show_signature", lang) }}
                         </button>
                         <dialog id="sig-{{ v.id }}" class="modal">
                             <article>
                                 <header>
                                     <button aria-label="Close" rel="prev"
                                             onclick="document.getElementById('sig-{{ v.id }}').close()"></button>
-                                    <h3>Unterschrift: {{ v.first_name }} {{ v.last_name }}</h3>
+                                    <h3>{{ t("sig_label", lang) }}: {{ v.first_name }} {{ v.last_name }}</h3>
                                 </header>
                                 <div class="signature-preview">
-                                    <img src="{{ v.signature_data }}" alt="Unterschrift">
+                                    <img src="{{ v.signature_data }}" alt="{{ t('sig_label', lang) }}">
                                 </div>
                                 <footer>
-                                    <button onclick="document.getElementById('sig-{{ v.id }}').close()">Schließen</button>
+                                    <button onclick="document.getElementById('sig-{{ v.id }}').close()">{{ t("close", lang) }}</button>
                                 </footer>
                             </article>
                         </dialog>
                         {% else %}
-                        <span class="text-muted">Keine</span>
+                        <span class="text-muted">{{ t("no_sig", lang) }}</span>
                         {% endif %}
                     </td>
                     <td>
@@ -122,12 +123,12 @@
                         {% elif v.has_positive_answer %}
                         <button type="button" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:none;cursor:pointer;"
                                 onclick="document.getElementById('fragen-{{ v.id }}').showModal()">
-                            &#9888; Auffällig
+                            &#9888; {{ t("conspicuous", lang) }}
                         </button>
                         {% else %}
                         <button type="button" class="btn btn-sm" style="background:#dcfce7;color:#166534;border:none;cursor:pointer;"
                                 onclick="document.getElementById('fragen-{{ v.id }}').showModal()">
-                            &#10003; OK
+                            &#10003; {{ t("ok", lang) }}
                         </button>
                         {% endif %}
                         {% if v.has_any_answers %}
@@ -136,20 +137,20 @@
                                 <header>
                                     <button aria-label="Close" rel="prev"
                                             onclick="document.getElementById('fragen-{{ v.id }}').close()"></button>
-                                    <h3>Fragebogen: {{ v.first_name }} {{ v.last_name }}</h3>
+                                    <h3>{{ t("questionnaire_label", lang) }}: {{ v.first_name }} {{ v.last_name }}</h3>
                                 </header>
                                 <table style="width:100%;font-size:0.875rem;">
                                     <tbody>
                                         {% for a in v.get_answers_display() %}
                                         <tr>
                                             <td>{{ loop.index }}. {{ a.text_de }}</td>
-                                            <td><strong>{{ "Ja" if a.answer == True else ("Nein" if a.answer == False else "—") }}</strong></td>
+                                            <td><strong>{{ t("yes", lang) if a.answer == True else (t("no", lang) if a.answer == False else "—") }}</strong></td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
                                 </table>
                                 <footer>
-                                    <button onclick="document.getElementById('fragen-{{ v.id }}').close()">Schließen</button>
+                                    <button onclick="document.getElementById('fragen-{{ v.id }}').close()">{{ t("close", lang) }}</button>
                                 </footer>
                             </article>
                         </dialog>
@@ -157,17 +158,17 @@
                     </td>
                     <td>
                         {% if v.missed_checkout %}
-                        <span class="badge badge-danger">Kein Checkout</span>
+                        <span class="badge badge-danger">{{ t("missed_checkout", lang) }}</span>
                         {% elif v.is_on_site %}
-                        <span class="badge badge-success">Vor Ort</span>
+                        <span class="badge badge-success">{{ t("on_site", lang) }}</span>
                         {% else %}
-                        <span class="badge badge-neutral">Abgereist</span>
+                        <span class="badge badge-neutral">{{ t("departed", lang) }}</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="10" class="empty-table">Keine Besucher gefunden.</td>
+                    <td colspan="10" class="empty-table">{{ t("no_visitors_found", lang) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

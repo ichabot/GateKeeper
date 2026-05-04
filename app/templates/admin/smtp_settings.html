@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% set lang = session.get('lang', 'de') %}
 
-{% block title %}GateKeeper - E-Mail Einstellungen{% endblock %}
+{% block title %}GateKeeper - {{ t("email_settings", lang) }}{% endblock %}
 
 {% block content %}
 <div class="admin-container">
     <div class="admin-header">
-        <h2>E-Mail Einstellungen (SMTP)</h2>
+        <h2>{{ t("email_settings", lang) }}</h2>
         <div class="admin-actions">
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">Zurück zum Dashboard</a>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">{{ t("back_to_dashboard", lang) }}</a>
         </div>
     </div>
 
@@ -56,7 +57,6 @@
                 {% if form.smtp_sender.errors %}
                 <small class="error-text">{{ form.smtp_sender.errors[0] }}</small>
                 {% endif %}
-                <small style="color:#64748b;">Muss bei IONOS eine verifizierte Absenderadresse sein.</small>
             </div>
 
             <div class="form-group" style="margin-bottom:1rem;">
@@ -65,7 +65,6 @@
                 {% if form.smtp_recipients.errors %}
                 <small class="error-text">{{ form.smtp_recipients.errors[0] }}</small>
                 {% endif %}
-                <small style="color:#64748b;">Mehrere Adressen mit Komma trennen. Empfänger des monatlichen Besucher-Reports.</small>
             </div>
 
             <div class="form-group" style="margin-bottom:1rem;padding:1rem;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;">
@@ -76,11 +75,6 @@
                 {% if form.emergency_recipients.errors %}
                 <small class="error-text">{{ form.emergency_recipients.errors[0] }}</small>
                 {% endif %}
-                <small style="color:#7f1d1d;">
-                    Diese Kontakte erhalten die Notfall-Evakuierungsliste wenn der rote
-                    <strong>„Notfall-Liste senden"</strong>-Button im Dashboard gedrückt wird.
-                    Mehrere Adressen mit Komma trennen.
-                </small>
             </div>
 
             <div class="form-group" style="margin-bottom:1rem;">
@@ -95,9 +89,6 @@
                     {{ form.enabled(id="enabled") }}
                     <span>{{ form.enabled.label.text }}</span>
                 </label>
-                <small style="color:#64748b;display:block;margin-top:0.25rem;">
-                    Wenn aktiv: <code>flask send-monthly-report</code> sendet am 1. des Monats den Vormonatsbericht (Cronjob einrichten – siehe unten).
-                </small>
             </div>
 
             {{ form.submit(class="btn btn-primary") }}
@@ -106,42 +97,32 @@
 
     <!-- Action Buttons -->
     <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem;">
-
-        <!-- Test: send current month -->
         <form method="POST" action="{{ url_for('admin.smtp_test') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-secondary"
-                    {% if not settings.smtp_host %}disabled title="Zuerst SMTP speichern"{% endif %}>
-                &#9993; Test-E-Mail jetzt senden (aktueller Monat)
+                    {% if not settings.smtp_host %}disabled{% endif %}>
+                &#9993; Test-E-Mail
             </button>
         </form>
 
-        <!-- Manual: send previous month -->
         <form method="POST" action="{{ url_for('admin.smtp_send_report') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-secondary"
-                    {% if not settings.smtp_host %}disabled title="Zuerst SMTP speichern"{% endif %}>
-                &#128197; Vormonatsbericht jetzt senden
+                    {% if not settings.smtp_host %}disabled{% endif %}>
+                &#128197; Vormonatsbericht
             </button>
         </form>
     </div>
 
     <!-- Cron info -->
     <div class="filter-card" style="max-width:640px;margin-top:2rem;background:#f8fafc;">
-        <h3 style="margin-top:0;font-size:1rem;">Automatischer Versand per Cronjob</h3>
-        <p style="font-size:0.875rem;color:#475569;">
-            Damit der Bericht automatisch am 1. jeden Monats versendet wird, folgenden Cronjob einrichten:
-        </p>
+        <h3 style="margin-top:0;font-size:1rem;">Cronjob</h3>
         <pre style="background:#1e293b;color:#e2e8f0;padding:0.75rem 1rem;border-radius:8px;font-size:0.8rem;overflow-x:auto;">0 7 1 * * cd /opt/gatekeeper &amp;&amp; venv/bin/flask send-monthly-report</pre>
-        <p style="font-size:0.8rem;color:#64748b;margin-bottom:0;">
-            Einrichten mit <code>crontab -e</code> als Benutzer <code>gatekeeper</code>.
-            Der Befehl ist nur aktiv wenn oben „Monatlicher Versand aktiv" aktiviert ist.
-        </p>
     </div>
 
     {% if settings.updated_at %}
     <p style="font-size:0.8rem;color:#94a3b8;margin-top:1rem;">
-        Zuletzt geändert: {{ settings.updated_at.strftime('%d.%m.%Y %H:%M') }} Uhr
+        {{ t("last_edited", lang) }}: {{ settings.updated_at.strftime('%d.%m.%Y %H:%M') }}
     </p>
     {% endif %}
 </div>

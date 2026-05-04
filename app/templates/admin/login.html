@@ -1,28 +1,29 @@
 {% extends "base.html" %}
+{% set lang = session.get('lang', 'de') %}
 
-{% block title %}GateKeeper - Admin Login{% endblock %}
+{% block title %}GateKeeper - {{ t("admin_login", lang) }}{% endblock %}
 
 {% block content %}
 <div class="form-container">
     <div class="form-card admin-login-card">
-        <h2>Admin Login</h2>
+        <h2>{{ t("admin_login", lang) }}</h2>
 
         <form method="POST" action="{{ url_for('admin.login') }}">
             {{ form.hidden_tag() }}
 
             <div class="form-group">
-                <label for="username">Benutzername</label>
-                {{ form.username(id="username", placeholder="Benutzername", class="form-input", autocomplete="username") }}
+                <label for="username">{{ t("username", lang) }}</label>
+                {{ form.username(id="username", placeholder=t("username", lang), class="form-input", autocomplete="username") }}
             </div>
 
             <div class="form-group">
-                <label for="password">Passwort</label>
-                {{ form.password(id="password", placeholder="Passwort", class="form-input", autocomplete="current-password") }}
+                <label for="password">{{ t("password", lang) }}</label>
+                {{ form.password(id="password", placeholder=t("password", lang), class="form-input", autocomplete="current-password") }}
             </div>
 
             <div class="form-actions">
-                <button type="button" onclick="window.location.href='{{ url_for('visitor.home') }}'" class="btn btn-secondary">Abbrechen</button>
-                {{ form.submit(class="btn btn-primary btn-submit") }}
+                <button type="button" onclick="window.location.href='{{ url_for('visitor.home') }}'" class="btn btn-secondary">{{ t("cancel", lang) }}</button>
+                <button type="submit" class="btn btn-primary btn-submit">{{ t("login_btn", lang) }}</button>
             </div>
         </form>
     </div>

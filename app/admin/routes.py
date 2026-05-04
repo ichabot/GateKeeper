@@ -11,6 +11,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 from flask_login import current_user, login_required, login_user, logout_user
@@ -88,7 +89,16 @@ def logout():
 @admin_bp.route("/dashboard")
 @login_required
 def dashboard():
+    from app.translations import t
+    lang = session.get("lang", "de")
     form = FilterForm(request.args)
+    # Translate status choices dynamically
+    form.status.choices = [
+        ("all", t("status_all", lang)),
+        ("on_site", t("status_on_site", lang)),
+        ("departed", t("status_departed", lang)),
+        ("missed", t("status_missed", lang)),
+    ]
     query = Visitor.query
 
     # Status filter

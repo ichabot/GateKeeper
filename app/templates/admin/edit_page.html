@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% set lang = session.get('lang', 'de') %}
 
-{% block title %}GateKeeper - {{ page.title_de }} bearbeiten{% endblock %}
+{% block title %}GateKeeper - {{ t("edit_page_title", lang) }}: {{ page.title_de }}{% endblock %}
 
 {% block content %}
 <div class="admin-container">
     <div class="admin-header">
-        <h2>Seite bearbeiten: {{ page.title_de }}</h2>
+        <h2>{{ t("edit_page_title", lang) }}: {{ page.title_de }}</h2>
         <div class="admin-actions">
-            <a href="{{ url_for('admin.pages_list') }}" class="btn btn-secondary btn-sm">Zurück</a>
+            <a href="{{ url_for('admin.pages_list') }}" class="btn btn-secondary btn-sm">{{ t("back", lang) }}</a>
         </div>
     </div>
 
@@ -55,7 +56,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" onclick="window.location.href='{{ url_for('admin.pages_list') }}'" class="btn btn-secondary">Abbrechen</button>
+                <button type="button" onclick="window.location.href='{{ url_for('admin.pages_list') }}'" class="btn btn-secondary">{{ t("cancel", lang) }}</button>
                 {{ form.submit(class="btn btn-primary btn-submit") }}
             </div>
         </form>
