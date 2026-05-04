@@ -8,49 +8,49 @@
     <meta name="robots" content="noindex, nofollow">
     <title>{% block title %}GateKeeper{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=11">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=12">
 </head>
 <body>
     <!-- Side Navigation Overlay -->
     <div class="side-nav-overlay" id="sideNavOverlay" onclick="closeSideNav()"></div>
     <aside class="side-nav" id="sideNav">
         <div class="side-nav-header">
-            <span>{{ "Informationen" if session.get('lang', 'de') == 'de' else "Information" }}</span>
+            <span>{{ t("information", session.get('lang', 'de')) }}</span>
             <button class="side-nav-close" onclick="closeSideNav()" aria-label="Close">&times;</button>
         </div>
         <div class="side-nav-links">
             <a href="{{ url_for('visitor.checkin') }}" class="side-nav-link" onclick="closeSideNav()">
                 <span class="nav-icon">&#10133;</span>
-                <span>{{ "Einchecken" if session.get('lang', 'de') == 'de' else "Check In" }}</span>
+                <span>{{ t("check_in", session.get('lang', 'de')) }}</span>
             </a>
             <a href="{{ url_for('visitor.checkout') }}" class="side-nav-link" onclick="closeSideNav()">
                 <span class="nav-icon">&#10132;</span>
-                <span>{{ "Auschecken" if session.get('lang', 'de') == 'de' else "Check Out" }}</span>
+                <span>{{ t("check_out", session.get('lang', 'de')) }}</span>
             </a>
             <div class="side-nav-divider"></div>
             <a href="{{ url_for('visitor.info_page', slug='emergency_contacts') }}" class="side-nav-link">
                 <span class="nav-icon">&#128100;</span>
-                <span>{{ "Kontakte" if session.get('lang', 'de') == 'de' else "Contacts" }}</span>
+                <span>{{ t("contacts", session.get('lang', 'de')) }}</span>
             </a>
             <a href="{{ url_for('visitor.info_page', slug='emergency_plans') }}" class="side-nav-link">
                 <span class="nav-icon">&#128203;</span>
-                <span>{{ "Notfallpläne" if session.get('lang', 'de') == 'de' else "Emergency Plans" }}</span>
+                <span>{{ t("emergency_plans", session.get('lang', 'de')) }}</span>
             </a>
             <a href="{{ url_for('visitor.info_page', slug='emergency_numbers') }}" class="side-nav-link">
                 <span class="nav-icon">&#128680;</span>
-                <span>{{ "Notrufnummern" if session.get('lang', 'de') == 'de' else "Emergency Numbers" }}</span>
+                <span>{{ t("emergency_numbers", session.get('lang', 'de')) }}</span>
             </a>
             <a href="{{ url_for('visitor.info_page', slug='visitor_info') }}" class="side-nav-link">
                 <span class="nav-icon">&#8505;</span>
-                <span>{{ "Besucherinformationen" if session.get('lang', 'de') == 'de' else "Visitor Information" }}</span>
+                <span>{{ t("visitor_info", session.get('lang', 'de')) }}</span>
             </a>
             <a href="{{ url_for('visitor.info_page', slug='hygiene_rules') }}" class="side-nav-link">
                 <span class="nav-icon">&#129529;</span>
-                <span>{{ "Hygieneregeln" if session.get('lang', 'de') == 'de' else "Hygiene Rules" }}</span>
+                <span>{{ t("hygiene_rules", session.get('lang', 'de')) }}</span>
             </a>
             <a href="{{ url_for('visitor.info_page', slug='safety_conduct') }}" class="side-nav-link">
                 <span class="nav-icon">&#9888;</span>
-                <span>{{ "Sicherheits-/Verhaltenshinweise" if session.get('lang', 'de') == 'de' else "Rules of safety / conduct" }}</span>
+                <span>{{ t("safety_conduct", session.get('lang', 'de')) }}</span>
             </a>
         </div>
     </aside>
@@ -76,6 +76,10 @@
                    class="lang-btn {{ 'active' if session.get('lang', 'de') == 'de' }}">DE</a>
                 <a href="{{ url_for('visitor.set_language', lang_code='en') }}"
                    class="lang-btn {{ 'active' if session.get('lang', 'de') == 'en' }}">EN</a>
+                <a href="{{ url_for('visitor.set_language', lang_code='fr') }}"
+                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'fr' }}">FR</a>
+                <a href="{{ url_for('visitor.set_language', lang_code='es') }}"
+                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'es' }}">ES</a>
             </div>
         </div>
     </header>
@@ -101,10 +105,10 @@
 
     <!-- Footer -->
     <footer class="app-footer">
-        <small>GateKeeper &copy; {{ current_year }} &mdash; Besuchermanagement</small>
+        <small>GateKeeper &copy; {{ current_year }} &mdash; {{ t("visitor_mgmt", session.get('lang', 'de')) }}</small>
     </footer>
 
-    <script src="{{ url_for('static', filename='js/app.js') }}?v=9"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=10"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

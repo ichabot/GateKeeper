@@ -213,6 +213,9 @@ GATEKEEPER_ENV=production
 # Monthly visitor report via email (1st of month at 7:00 AM)
 0 7 1 * * gatekeeper cd /opt/gatekeeper && venv/bin/flask send-monthly-report
 
+# Auto-checkout missed visitors (daily at 0:05 AM)
+5 0 * * * gatekeeper cd /opt/gatekeeper && venv/bin/flask auto-checkout
+
 CRONEOF
     chmod 644 "$CRON_FILE"
     echo ""

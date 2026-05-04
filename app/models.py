@@ -18,6 +18,8 @@ class HealthQuestion(db.Model):
     position = db.Column(db.Integer, nullable=False, default=0)
     text_de = db.Column(db.Text, nullable=False)
     text_en = db.Column(db.Text, nullable=False, default="")
+    text_fr = db.Column(db.Text, nullable=False, default="")
+    text_es = db.Column(db.Text, nullable=False, default="")
     short_key = db.Column(db.String(50), nullable=False, unique=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(
@@ -126,12 +128,14 @@ class Visitor(db.Model):
         return any(v is not None for v in legacy)
 
     def get_answers_display(self) -> list[dict]:
-        """Return list of {question_de, question_en, answer} for display."""
+        """Return list of {question_de, question_en, question_fr, question_es, answer} for display."""
         if self.health_answers:
             return [
                 {
                     "text_de": a.question.text_de,
                     "text_en": a.question.text_en,
+                    "text_fr": a.question.text_fr,
+                    "text_es": a.question.text_es,
                     "answer": a.answer,
                 }
                 for a in sorted(self.health_answers, key=lambda a: a.question.position)
@@ -250,8 +254,12 @@ class StaticPage(db.Model):
     slug = db.Column(db.String(50), unique=True, nullable=False)
     title_de = db.Column(db.String(200), nullable=False)
     title_en = db.Column(db.String(200), nullable=False)
+    title_fr = db.Column(db.String(200), nullable=False, default="")
+    title_es = db.Column(db.String(200), nullable=False, default="")
     content_de = db.Column(db.Text, nullable=False, default="")
     content_en = db.Column(db.Text, nullable=False, default="")
+    content_fr = db.Column(db.Text, nullable=False, default="")
+    content_es = db.Column(db.Text, nullable=False, default="")
     updated_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,

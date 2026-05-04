@@ -12,7 +12,7 @@
         </div>
         <div class="form-actions" style="margin-top: 2rem;">
             <a href="{{ url_for('visitor.checkin') }}" class="btn btn-secondary">
-                {{ "Zurück zum Einchecken" if lang == 'de' else "Back to Check In" }}
+                {{ t("back_to_checkin", lang) }}
             </a>
         </div>
     </div>

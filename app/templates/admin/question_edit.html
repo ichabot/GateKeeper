@@ -29,6 +29,22 @@
                 {% endif %}
             </div>
 
+            <div class="form-group" style="margin-bottom:1.25rem;">
+                <label for="text_fr">{{ form.text_fr.label.text }}</label>
+                {{ form.text_fr(id="text_fr", class="form-input", rows=2, style="min-height:60px;") }}
+                {% if form.text_fr.errors %}
+                <small class="error-text">{{ form.text_fr.errors[0] }}</small>
+                {% endif %}
+            </div>
+
+            <div class="form-group" style="margin-bottom:1.25rem;">
+                <label for="text_es">{{ form.text_es.label.text }}</label>
+                {{ form.text_es(id="text_es", class="form-input", rows=2, style="min-height:60px;") }}
+                {% if form.text_es.errors %}
+                <small class="error-text">{{ form.text_es.errors[0] }}</small>
+                {% endif %}
+            </div>
+
             <div class="form-grid">
                 <div class="form-group">
                     <label for="short_key">{{ form.short_key.label.text }}</label>

@@ -11,7 +11,7 @@ load_dotenv()
 class BaseConfig:
     SECRET_KEY = os.environ.get("SECRET_KEY", "")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    LANGUAGES = ["de", "en"]
+    LANGUAGES = ["de", "en", "fr", "es"]
     BABEL_DEFAULT_LOCALE = "de"
     ADMIN_DEFAULT_PASSWORD = os.environ.get("ADMIN_DEFAULT_PASSWORD", "admin")
 

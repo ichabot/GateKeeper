@@ -66,6 +66,8 @@ class SmtpSettingsForm(FlaskForm):
 class HealthQuestionForm(FlaskForm):
     text_de = TextAreaField("Frage (DE)", validators=[DataRequired()])
     text_en = TextAreaField("Frage (EN)", validators=[DataRequired()])
+    text_fr = TextAreaField("Frage (FR)", validators=[Optional()])
+    text_es = TextAreaField("Frage (ES)", validators=[Optional()])
     short_key = StringField(
         "Kurzschlüssel (z.B. 'flu', 'diarrhea')",
         validators=[DataRequired()],
@@ -78,6 +80,10 @@ class HealthQuestionForm(FlaskForm):
 class EditPageForm(FlaskForm):
     title_de = StringField("Titel (DE)", validators=[DataRequired()])
     title_en = StringField("Titel (EN)", validators=[DataRequired()])
+    title_fr = StringField("Titel (FR)", validators=[Optional()])
+    title_es = StringField("Titel (ES)", validators=[Optional()])
     content_de = TextAreaField("Inhalt (DE)")
     content_en = TextAreaField("Inhalt (EN)")
+    content_fr = TextAreaField("Inhalt (FR)")
+    content_es = TextAreaField("Inhalt (ES)")
     submit = SubmitField("Speichern")

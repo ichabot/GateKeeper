@@ -1,7 +1,7 @@
 """Flask application factory for GateKeeper."""
 
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 import click
@@ -53,6 +53,10 @@ def create_app(config_name: str | None = None) -> Flask:
 
     babel.init_app(app, locale_selector=get_locale)
 
+    # Register translation helper as Jinja2 global
+    from app.translations import t as translate_fn
+    app.jinja_env.globals["t"] = translate_fn
+
     # Jinja2 filter for timezone conversion
     app.jinja_env.filters["to_berlin"] = to_berlin
 
@@ -80,6 +84,7 @@ def create_app(config_name: str | None = None) -> Flask:
         from app.models import AdminUser, HealthQuestion, SmtpSettings, StaticPage
 
         db.create_all()
+        _migrate_add_language_columns(db)
         _seed_defaults(db, AdminUser, StaticPage, SmtpSettings, HealthQuestion, app)
 
     return app
@@ -241,6 +246,43 @@ infectious skin diseases.</p>
 """
 
 
+def _migrate_add_language_columns(db):
+    """Add FR/ES columns to existing SQLite tables (idempotent)."""
+    import sqlite3
+
+    conn = db.engine.raw_connection()
+    cursor = conn.cursor()
+
+    # Helper: check if column exists
+    def _has_column(table, column):
+        cursor.execute(f"PRAGMA table_info({table})")
+        return any(row[1] == column for row in cursor.fetchall())
+
+    alter_statements = []
+    # HealthQuestion: text_fr, text_es
+    if not _has_column("health_questions", "text_fr"):
+        alter_statements.append(
+            "ALTER TABLE health_questions ADD COLUMN text_fr TEXT NOT NULL DEFAULT ''"
+        )
+    if not _has_column("health_questions", "text_es"):
+        alter_statements.append(
+            "ALTER TABLE health_questions ADD COLUMN text_es TEXT NOT NULL DEFAULT ''"
+        )
+    # StaticPage: title_fr, title_es, content_fr, content_es
+    for col in ("title_fr", "title_es", "content_fr", "content_es"):
+        if not _has_column("static_pages", col):
+            col_type = "VARCHAR(200)" if col.startswith("title") else "TEXT"
+            alter_statements.append(
+                f"ALTER TABLE static_pages ADD COLUMN {col} {col_type} NOT NULL DEFAULT ''"
+            )
+
+    for stmt in alter_statements:
+        cursor.execute(stmt)
+
+    conn.commit()
+    conn.close()
+
+
 def _seed_defaults(db, AdminUser, StaticPage, SmtpSettings, HealthQuestion, app):
     """Seed default admin user, static pages, and health questions if not present."""
     if not AdminUser.query.first():
@@ -281,22 +323,37 @@ def _seed_defaults(db, AdminUser, StaticPage, SmtpSettings, HealthQuestion, app)
     if not HealthQuestion.query.first():
         default_questions = [
             (1, "flu", "Erkältungskrankheiten (Husten, Schnupfen, Fieber)",
-             "Flu diseases (cough, runny nose, fever)"),
+             "Flu diseases (cough, runny nose, fever)",
+             "Maladies grippales (toux, rhume, fièvre)",
+             "Enfermedades gripales (tos, resfriado, fiebre)"),
             (2, "diarrhea", "Durchfall oder Erbrechen",
-             "Diarrhoea or vomiting"),
+             "Diarrhoea or vomiting",
+             "Diarrhée ou vomissements",
+             "Diarrea o vómitos"),
             (3, "food_poisoning",
              "Salmonellen-, Campylobacter-, Shigellen- oder E. Coli-Lebensmittelvergiftung",
-             "Salmonella, Campylobacter, Shigella or E. Coli food poisoning"),
+             "Salmonella, Campylobacter, Shigella or E. Coli food poisoning",
+             "Intoxication alimentaire à Salmonella, Campylobacter, Shigella ou E. Coli",
+             "Intoxicación alimentaria por Salmonella, Campylobacter, Shigella o E. Coli"),
             (4, "parasites", "Parasitäre Infektionen",
-             "Any parasitic infection"),
+             "Any parasitic infection",
+             "Infections parasitaires",
+             "Infecciones parasitarias"),
             (5, "ent", "Hals-Nasen-Ohren-Infektionen",
-             "Ear, nose or throat infections"),
+             "Ear, nose or throat infections",
+             "Infections ORL (oreilles, nez, gorge)",
+             "Infecciones de oídos, nariz o garganta"),
             (6, "skin", "Hauterkrankungen oder offene, eitrige Wunden",
-             "Skin rashes or open, festering wounds"),
+             "Skin rashes or open, festering wounds",
+             "Maladies cutanées ou plaies ouvertes et purulentes",
+             "Enfermedades cutáneas o heridas abiertas y purulentas"),
         ]
-        for pos, key, text_de, text_en in default_questions:
+        for pos, key, text_de, text_en, text_fr, text_es in default_questions:
             db.session.add(HealthQuestion(
-                position=pos, short_key=key, text_de=text_de, text_en=text_en, active=True
+                position=pos, short_key=key,
+                text_de=text_de, text_en=text_en,
+                text_fr=text_fr, text_es=text_es,
+                active=True
             ))
 
     db.session.commit()
@@ -361,3 +418,23 @@ def register_cli(app: Flask):
         count = Visitor.query.filter(Visitor.created_at < cutoff).delete()
         db.session.commit()
         click.echo(f"Deleted {count} visitor records older than {days} days.")
+
+    @app.cli.command("auto-checkout")
+    def auto_checkout():
+        """Auto-checkout visitors who forgot to check out (for nightly cron)."""
+        from app.extensions import db
+        from app.models import Visitor
+
+        today_start = datetime.combine(
+            datetime.now(timezone.utc).date(), time(0, 0, 0)
+        ).replace(tzinfo=timezone.utc)
+        missed = Visitor.query.filter(
+            Visitor.departure_time.is_(None),
+            Visitor.arrival_time < today_start,
+        ).all()
+        for v in missed:
+            v.departure_time = datetime.combine(
+                v.arrival_time.date(), time(23, 59, 59)
+            ).replace(tzinfo=timezone.utc)
+        db.session.commit()
+        click.echo(f"Auto-checkout: {len(missed)} visitor(s) checked out.")

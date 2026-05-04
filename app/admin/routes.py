@@ -105,8 +105,17 @@ def dashboard():
         )
 
     # Date range filter - default to today if no date is provided
-    date_from = form.date_from.data
-    date_to = form.date_to.data
+    try:
+        date_from = form.date_from.data
+    except (ValueError, TypeError):
+        date_from = None
+        form.date_from.data = None
+    try:
+        date_to = form.date_to.data
+    except (ValueError, TypeError):
+        date_to = None
+        form.date_to.data = None
+
     if date_from is None and date_to is None and not request.args:
         date_from = datetime.now(timezone.utc).date()
         form.date_from.data = date_from
@@ -137,7 +146,11 @@ def dashboard():
         )
 
     visitors = query.order_by(Visitor.arrival_time.desc()).all()
-    on_site_count = Visitor.query.filter(Visitor.departure_time.is_(None)).count()
+    today_start = datetime.combine(datetime.now(timezone.utc).date(), time.min).replace(tzinfo=timezone.utc)
+    on_site_count = Visitor.query.filter(
+        Visitor.departure_time.is_(None),
+        Visitor.arrival_time >= today_start,
+    ).count()
 
     return render_template(
         "admin/dashboard.html",
@@ -159,17 +172,23 @@ def export_csv():
     elif status == "departed":
         query = query.filter(Visitor.departure_time.isnot(None))
 
-    date_from = request.args.get("date_from")
-    date_to = request.args.get("date_to")
-    if date_from:
-        query = query.filter(
-            Visitor.arrival_time >= datetime.fromisoformat(date_from)
-        )
-    if date_to:
-        dt = datetime.fromisoformat(date_to)
-        query = query.filter(
-            Visitor.arrival_time <= dt.replace(hour=23, minute=59, second=59)
-        )
+    date_from_str = request.args.get("date_from")
+    date_to_str = request.args.get("date_to")
+    if date_from_str:
+        try:
+            query = query.filter(
+                Visitor.arrival_time >= datetime.fromisoformat(date_from_str)
+            )
+        except ValueError:
+            pass
+    if date_to_str:
+        try:
+            dt = datetime.fromisoformat(date_to_str)
+            query = query.filter(
+                Visitor.arrival_time <= dt.replace(hour=23, minute=59, second=59)
+            )
+        except ValueError:
+            pass
 
     visitors = query.order_by(Visitor.arrival_time.desc()).all()
 
@@ -241,6 +260,8 @@ def question_new():
             position=max_pos + 1,
             text_de=form.text_de.data.strip(),
             text_en=form.text_en.data.strip(),
+            text_fr=(form.text_fr.data or "").strip(),
+            text_es=(form.text_es.data or "").strip(),
             short_key=form.short_key.data.strip().lower().replace(" ", "_"),
             active=form.active.data,
         )
@@ -263,6 +284,8 @@ def question_edit(question_id):
     if form.validate_on_submit():
         q.text_de = form.text_de.data.strip()
         q.text_en = form.text_en.data.strip()
+        q.text_fr = (form.text_fr.data or "").strip()
+        q.text_es = (form.text_es.data or "").strip()
         q.short_key = form.short_key.data.strip().lower().replace(" ", "_")
         q.active = form.active.data
         q.position = form.position.data
@@ -379,8 +402,12 @@ def edit_page(slug):
     if form.validate_on_submit():
         page.title_de = form.title_de.data
         page.title_en = form.title_en.data
+        page.title_fr = form.title_fr.data or ""
+        page.title_es = form.title_es.data or ""
         page.content_de = form.content_de.data
         page.content_en = form.content_en.data
+        page.content_fr = form.content_fr.data or ""
+        page.content_es = form.content_es.data or ""
         page.updated_at = datetime.now(timezone.utc)
         db.session.commit()
         flash("Seite gespeichert.", "success")

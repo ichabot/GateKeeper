@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% set lang = session.get('lang', 'de') %}
 
-{% block title %}GateKeeper - {{ "Auschecken" if lang == 'de' else "Check Out" }}{% endblock %}
+{% block title %}GateKeeper - {{ t("check_out", lang) }}{% endblock %}
 
 {% block content %}
 <div class="form-container">
     <div class="form-card checkout-card">
-        <h2>{{ "Auschecken" if lang == 'de' else "Check Out" }}</h2>
+        <h2>{{ t("check_out", lang) }}</h2>
         <p class="form-subtitle">
-            {{ "Bitte geben Sie Ihren 4-stelligen PIN ein" if lang == 'de' else "Please enter your 4-digit PIN" }}
+            {{ t("enter_pin", lang) }}
         </p>
 
         <form method="POST" action="{{ url_for('visitor.checkout') }}" id="checkoutForm">
@@ -52,7 +52,7 @@
 
         <div class="form-actions" style="margin-top: 1.5rem;">
             <a href="{{ url_for('visitor.home') }}" class="btn btn-secondary">
-                {{ "Abbrechen" if lang == 'de' else "Cancel" }}
+                {{ t("cancel", lang) }}
             </a>
         </div>
     </div>

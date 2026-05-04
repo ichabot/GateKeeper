@@ -1,28 +1,28 @@
 {% extends "base.html" %}
 {% set lang = session.get('lang', 'de') %}
 
-{% block title %}GateKeeper - {{ "Ausgecheckt" if lang == 'de' else "Checked Out" }}{% endblock %}
+{% block title %}GateKeeper - {{ t("checkout_title", lang) }}{% endblock %}
 
 {% block content %}
 <div class="success-container">
     <div class="success-card checkout-success">
         <div class="success-icon">&#128075;</div>
-        <h2>{{ "Auf Wiedersehen!" if lang == 'de' else "Goodbye!" }}</h2>
+        <h2>{{ t("goodbye", lang) }}</h2>
         {% if name %}
         <p class="success-name">{{ name }}</p>
         {% endif %}
         <p class="success-message">
-            {{ "Sie wurden erfolgreich ausgecheckt. Haben Sie einen guten Tag!" if lang == 'de' else "You have been successfully checked out. Have a great day!" }}
+            {{ t("checkout_success_msg", lang) }}
         </p>
 
         <div class="auto-redirect">
             <p>
-                {{ "Automatische Weiterleitung in" if lang == 'de' else "Auto-redirect in" }}
+                {{ t("auto_redirect_in", lang) }}
                 <span id="countdown">10</span>
-                {{ "Sekunden" if lang == 'de' else "seconds" }}
+                {{ t("seconds", lang) }}
             </p>
             <a href="{{ url_for('visitor.home') }}" class="btn btn-secondary">
-                {{ "Zur Startseite" if lang == 'de' else "Back to Home" }}
+                {{ t("back_to_home", lang) }}
             </a>
         </div>
     </div>

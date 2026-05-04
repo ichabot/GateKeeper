@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% set lang = session.get('lang', 'de') %}
 
-{% block title %}GateKeeper - {{ "Einchecken" if lang == 'de' else "Check In" }}{% endblock %}
+{% block title %}GateKeeper - {{ t("check_in", lang) }}{% endblock %}
 
 {% block content %}
 <div class="form-container">
     <div class="form-card">
-        <h2>{{ "Einchecken" if lang == 'de' else "Check In" }}</h2>
+        <h2>{{ t("check_in", lang) }}</h2>
         <p class="form-subtitle">
-            {{ "Bitte füllen Sie das Formular aus" if lang == 'de' else "Please fill in the form" }}
+            {{ t("fill_form", lang) }}
         </p>
 
         <form method="POST" action="{{ url_for('visitor.checkin') }}" id="checkinForm">
@@ -17,40 +17,40 @@
             <!-- Personal Data -->
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="first_name">{{ "Vorname" if lang == 'de' else "First Name" }} *</label>
-                    {{ form.first_name(id="first_name", placeholder="Vorname" if lang == 'de' else "First Name", class="form-input", autocomplete="off") }}
+                    <label for="first_name">{{ t("first_name", lang) }} *</label>
+                    {{ form.first_name(id="first_name", placeholder=t("first_name", lang), class="form-input", autocomplete="off") }}
                     {% if form.first_name.errors %}
                     <small class="error-text">{{ form.first_name.errors[0] }}</small>
                     {% endif %}
                 </div>
 
                 <div class="form-group">
-                    <label for="last_name">{{ "Nachname" if lang == 'de' else "Last Name" }} *</label>
-                    {{ form.last_name(id="last_name", placeholder="Nachname" if lang == 'de' else "Last Name", class="form-input", autocomplete="off") }}
+                    <label for="last_name">{{ t("last_name", lang) }} *</label>
+                    {{ form.last_name(id="last_name", placeholder=t("last_name", lang), class="form-input", autocomplete="off") }}
                     {% if form.last_name.errors %}
                     <small class="error-text">{{ form.last_name.errors[0] }}</small>
                     {% endif %}
                 </div>
 
                 <div class="form-group">
-                    <label for="company">{{ "Firma" if lang == 'de' else "Company" }} *</label>
-                    {{ form.company(id="company", placeholder="Firma" if lang == 'de' else "Company", class="form-input", autocomplete="off") }}
+                    <label for="company">{{ t("company", lang) }} *</label>
+                    {{ form.company(id="company", placeholder=t("company", lang), class="form-input", autocomplete="off") }}
                     {% if form.company.errors %}
                     <small class="error-text">{{ form.company.errors[0] }}</small>
                     {% endif %}
                 </div>
 
                 <div class="form-group">
-                    <label for="contact_person">{{ "Ansprechpartner" if lang == 'de' else "Contact Person" }} *</label>
-                    {{ form.contact_person(id="contact_person", placeholder="Wen besuchen Sie?" if lang == 'de' else "Who are you visiting?", class="form-input", autocomplete="off") }}
+                    <label for="contact_person">{{ t("contact_person", lang) }} *</label>
+                    {{ form.contact_person(id="contact_person", placeholder=t("who_visiting", lang), class="form-input", autocomplete="off") }}
                     {% if form.contact_person.errors %}
                     <small class="error-text">{{ form.contact_person.errors[0] }}</small>
                     {% endif %}
                 </div>
 
                 <div class="form-group">
-                    <label for="license_plate">{{ "KFZ-Kennzeichen" if lang == 'de' else "License Plate" }}</label>
-                    {{ form.license_plate(id="license_plate", placeholder="z.B. M-AB 1234" if lang == 'de' else "e.g. M-AB 1234", class="form-input", autocomplete="off") }}
+                    <label for="license_plate">{{ t("license_plate", lang) }}</label>
+                    {{ form.license_plate(id="license_plate", placeholder=t("license_plate_example", lang), class="form-input", autocomplete="off") }}
                     {% if form.license_plate.errors %}
                     <small class="error-text">{{ form.license_plate.errors[0] }}</small>
                     {% endif %}
@@ -61,31 +61,31 @@
             {% if questions %}
             <div class="questions-section">
                 <p class="questions-section-title">
-                    {{ "Gesundheitsfragebogen *" if lang == 'de' else "Health Questionnaire *" }}
+                    {{ t("health_questionnaire", lang) }} *
                 </p>
                 <p class="questions-section-subtitle">
-                    {% if lang == 'de' %}
-                    Haben Sie in den letzten 7 Tagen an folgenden Krankheiten gelitten?
-                    {% else %}
-                    In the last 7 days have you suffered from any of the following conditions?
-                    {% endif %}
+                    {{ t("health_question_intro", lang) }}
                 </p>
 
                 {% for q in questions %}
                 <div class="question-item">
                     <span class="question-text">
-                        {{ loop.index }}. {{ q.text_de if lang == 'de' else q.text_en }}
+                        {% set qtext = q.text_de %}
+                        {% if lang == 'en' and q.text_en %}{% set qtext = q.text_en %}
+                        {% elif lang == 'fr' and q.text_fr %}{% set qtext = q.text_fr %}
+                        {% elif lang == 'es' and q.text_es %}{% set qtext = q.text_es %}{% endif %}
+                        {{ loop.index }}. {{ qtext }}
                     </span>
                     <div class="question-radios">
                         <label class="question-radio-label">
                             <input type="radio" name="hq_{{ q.id }}" value="yes"
                                    {{ 'checked' if request.form.get('hq_' ~ q.id|string) == 'yes' }}>
-                            {{ "Ja" if lang == 'de' else "Yes" }}
+                            {{ t("yes", lang) }}
                         </label>
                         <label class="question-radio-label">
                             <input type="radio" name="hq_{{ q.id }}" value="no"
                                    {{ 'checked' if request.form.get('hq_' ~ q.id|string) == 'no' }}>
-                            {{ "Nein" if lang == 'de' else "No" }}
+                            {{ t("no", lang) }}
                         </label>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
 
                 {% if questions_error is defined and questions_error %}
                 <small class="questions-error">
-                    {{ "Bitte beantworten Sie alle Fragen." if lang == 'de' else "Please answer all questions." }}
+                    {{ t("answer_all_questions", lang) }}
                 </small>
                 {% endif %}
             </div>
@@ -104,11 +104,7 @@
                 <label class="dsgvo-label">
                     {{ form.dsgvo_consent(id="dsgvo_consent") }}
                     <span>
-                        {% if lang == 'de' %}
-                        Ich stimme der <a href="#" onclick="event.preventDefault(); document.getElementById('dsgvoModal').showModal();">Datenschutzerklärung</a> zu und bin mit der Erfassung meiner Daten einverstanden. *
-                        {% else %}
-                        I agree to the <a href="#" onclick="event.preventDefault(); document.getElementById('dsgvoModal').showModal();">privacy policy</a> and consent to the processing of my data. *
-                        {% endif %}
+                        {{ t("privacy_agree_" + lang)|safe }}
                     </span>
                 </label>
                 {% if form.dsgvo_consent.errors %}
@@ -121,11 +117,7 @@
                 <label class="dsgvo-label">
                     {{ form.hygiene_consent(id="hygiene_consent") }}
                     <span>
-                        {% if lang == 'de' %}
-                        Hiermit bestätige ich, dass ich die <a href="{{ url_for('visitor.info_page', slug='hygiene_rules') }}" target="_blank">Hygieneregeln</a> gelesen und verstanden habe und die Fragen korrekt beantwortet wurden. *
-                        {% else %}
-                        I confirm that the information I have given is correct and I have read and understood the <a href="{{ url_for('visitor.info_page', slug='hygiene_rules') }}" target="_blank">hygiene rules</a>. *
-                        {% endif %}
+                        {{ t("hygiene_confirm_" + lang).replace("{url}", url_for('visitor.info_page', slug='hygiene_rules'))|safe }}
                     </span>
                 </label>
                 {% if form.hygiene_consent.errors %}
@@ -138,11 +130,7 @@
                 <label class="dsgvo-label">
                     {{ form.safety_consent(id="safety_consent") }}
                     <span>
-                        {% if lang == 'de' %}
-                        Ich habe die <a href="{{ url_for('visitor.info_page', slug='safety_conduct') }}" target="_blank">Sicherheits-/Verhaltenshinweise</a> gelesen und bestätige deren Einhaltung. *
-                        {% else %}
-                        I have read the <a href="{{ url_for('visitor.info_page', slug='safety_conduct') }}" target="_blank">rules of safety / conduct</a> and confirm that I will comply with them. *
-                        {% endif %}
+                        {{ t("safety_confirm_" + lang).replace("{url}", url_for('visitor.info_page', slug='safety_conduct'))|safe }}
                     </span>
                 </label>
                 {% if form.safety_consent.errors %}
@@ -152,28 +140,28 @@
 
             <!-- Signature Pad -->
             <div class="signature-section">
-                <label>{{ "Unterschrift" if lang == 'de' else "Signature" }} *</label>
+                <label>{{ t("signature", lang) }} *</label>
                 <div class="signature-pad-wrapper">
                     <canvas id="signaturePad" class="signature-canvas"></canvas>
                     <button type="button" class="signature-clear-btn" onclick="clearSignature()">
-                        {{ "Löschen" if lang == 'de' else "Clear" }}
+                        {{ t("clear", lang) }}
                     </button>
                 </div>
                 <textarea name="signature_data" id="signatureData" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" tabindex="-1" aria-hidden="true"></textarea>
                 <small class="signature-hint">
-                    {{ "Bitte unterschreiben Sie mit dem Finger oder Stift" if lang == 'de' else "Please sign with your finger or stylus" }}
+                    {{ t("sign_hint", lang) }}
                 </small>
                 <small class="error-text" id="signatureError" style="display:none;">
-                    {{ "Bitte unterschreiben Sie das Formular." if lang == 'de' else "Please sign the form." }}
+                    {{ t("sign_required", lang) }}
                 </small>
             </div>
 
             <div class="form-actions">
                 <button type="button" onclick="window.location.href='{{ url_for('visitor.home') }}'" class="btn btn-secondary">
-                    {{ "Abbrechen" if lang == 'de' else "Cancel" }}
+                    {{ t("cancel", lang) }}
                 </button>
                 <button type="submit" class="btn btn-checkin btn-submit">
-                    {{ "Einchecken" if lang == 'de' else "Check In" }}
+                    {{ t("check_in", lang) }}
                 </button>
             </div>
         </form>
@@ -185,20 +173,14 @@
     <article>
         <header>
             <button aria-label="Close" rel="prev" onclick="document.getElementById('healthWarningModal').close()"></button>
-            <h3>{{ "Zugang nicht möglich" if lang == 'de' else "Access not permitted" }}</h3>
+            <h3>{{ t("access_denied", lang) }}</h3>
         </header>
         <p>
-            {% if lang == 'de' %}
-            Aufgrund Ihrer Angaben im Gesundheitsfragebogen kann der Zutritt zum Betrieb leider nicht gestattet werden.<br><br>
-            <strong>Bitte wenden Sie sich an einen Mitarbeiter.</strong>
-            {% else %}
-            Based on your answers in the health questionnaire, access to the premises cannot be granted at this time.<br><br>
-            <strong>Please contact a member of staff.</strong>
-            {% endif %}
+            {{ t("health_blocked_" + lang)|safe }}
         </p>
         <footer>
             <button onclick="document.getElementById('healthWarningModal').close()">
-                {{ "Schließen" if lang == 'de' else "Close" }}
+                {{ t("close", lang) }}
             </button>
         </footer>
     </article>
@@ -218,25 +200,14 @@ document.addEventListener('DOMContentLoaded', function() {
     <article>
         <header>
             <button aria-label="Close" rel="prev" onclick="document.getElementById('dsgvoModal').close()"></button>
-            <h3>{{ "Datenschutzerklärung" if lang == 'de' else "Privacy Policy" }}</h3>
+            <h3>{{ t("privacy_policy", lang) }}</h3>
         </header>
         <p>
-            {% if lang == 'de' %}
-            Ihre personenbezogenen Daten (Name, Firma, Ansprechpartner, Besuchszeiten) werden
-            ausschließlich zum Zweck der Besucherdokumentation und Gebäudesicherheit erfasst und
-            verarbeitet. Die Daten werden nach Ablauf der gesetzlichen Aufbewahrungsfrist
-            automatisch gelöscht. Sie haben das Recht auf Auskunft, Berichtigung und Löschung
-            Ihrer Daten gemäß DSGVO Art. 15-17.
-            {% else %}
-            Your personal data (name, company, contact person, visit times) is collected and
-            processed solely for visitor documentation and building security purposes. Data will
-            be automatically deleted after the statutory retention period. You have the right to
-            access, rectify, and delete your data according to GDPR Articles 15-17.
-            {% endif %}
+            {{ t("privacy_text_" + lang)|safe }}
         </p>
         <footer>
             <button onclick="document.getElementById('dsgvoModal').close()">
-                {{ "Schließen" if lang == 'de' else "Close" }}
+                {{ t("close", lang) }}
             </button>
         </footer>
     </article>

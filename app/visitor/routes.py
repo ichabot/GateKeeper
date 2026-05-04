@@ -124,10 +124,8 @@ def checkout():
         ip = request.remote_addr or "unknown"
         if _is_checkout_rate_limited(ip):
             lang = session.get("lang", "de")
-            if lang == "de":
-                flash("Zu viele Versuche. Bitte warten Sie 2 Minuten.", "error")
-            else:
-                flash("Too many attempts. Please wait 2 minutes.", "error")
+            from app.translations import t
+            flash(t("too_many_attempts", lang), "error")
             return render_template("visitor/checkout.html", form=form)
 
         pin = form.pin.data.strip()
@@ -144,10 +142,8 @@ def checkout():
         else:
             _record_failed_checkout(ip)
             lang = session.get("lang", "de")
-            if lang == "de":
-                flash("Ungültiger PIN. Bitte versuchen Sie es erneut.", "error")
-            else:
-                flash("Invalid PIN. Please try again.", "error")
+            from app.translations import t
+            flash(t("invalid_pin", lang), "error")
     return render_template("visitor/checkout.html", form=form)
 
 
@@ -161,8 +157,8 @@ def checkout_success():
 def info_page(slug):
     page = StaticPage.query.filter_by(slug=slug).first_or_404()
     lang = session.get("lang", "de")
-    title = page.title_en if lang == "en" else page.title_de
-    content = page.content_en if lang == "en" else page.content_de
+    title = getattr(page, f'title_{lang}', None) or page.title_de
+    content = getattr(page, f'content_{lang}', None) or page.content_de
     return render_template(
         "visitor/info_page.html", title=title, content=content
     )
@@ -170,6 +166,6 @@ def info_page(slug):
 
 @visitor_bp.route("/lang/<lang_code>")
 def set_language(lang_code):
-    if lang_code in ("de", "en"):
+    if lang_code in ("de", "en", "fr", "es"):
         session["lang"] = lang_code
     return redirect(request.referrer or url_for("visitor.home"))

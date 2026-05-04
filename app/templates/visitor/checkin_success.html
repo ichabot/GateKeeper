@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% set lang = session.get('lang', 'de') %}
 
-{% block title %}GateKeeper - {{ "Erfolgreich eingecheckt" if lang == 'de' else "Checked In" }}{% endblock %}
+{% block title %}GateKeeper - {{ t("checkin_success_title", lang) }}{% endblock %}
 
 {% block content %}
 <div class="success-container">
     <div class="success-card checkin-success">
         <div class="success-icon">&#9989;</div>
-        <h2>{{ "Erfolgreich eingecheckt!" if lang == 'de' else "Successfully Checked In!" }}</h2>
+        <h2>{{ t("checkin_success", lang) }}</h2>
 
         <div class="pin-display">
             <p class="pin-label">
-                {{ "Ihr persönlicher PIN für das Auschecken:" if lang == 'de' else "Your personal PIN for checking out:" }}
+                {{ t("your_pin", lang) }}
             </p>
             <div class="pin-code">
                 {% for digit in pin %}
@@ -19,18 +19,18 @@
                 {% endfor %}
             </div>
             <p class="pin-hint">
-                {{ "Bitte merken Sie sich diesen PIN oder fotografieren Sie ihn ab." if lang == 'de' else "Please remember this PIN or take a photo." }}
+                {{ t("remember_pin", lang) }}
             </p>
         </div>
 
         <div class="auto-redirect">
             <p>
-                {{ "Automatische Weiterleitung in" if lang == 'de' else "Auto-redirect in" }}
+                {{ t("auto_redirect_in", lang) }}
                 <span id="countdown">20</span>
-                {{ "Sekunden" if lang == 'de' else "seconds" }}
+                {{ t("seconds", lang) }}
             </p>
             <a href="{{ url_for('visitor.home') }}" class="btn btn-secondary">
-                {{ "Zur Startseite" if lang == 'de' else "Back to Home" }}
+                {{ t("back_to_home", lang) }}
             </a>
         </div>
     </div>
