@@ -68,10 +68,10 @@
                     <span>LOGO</span>
                 </div>
             </a>
-            <span class="app-title">GateKeeper</span>
+            <span class="app-title" translate="no">GateKeeper</span>
         </div>
         <div class="header-right">
-            <div class="lang-switcher">
+            <div class="lang-switcher" translate="no">
                 <a href="{{ url_for('visitor.set_language', lang_code='de') }}"
                    class="lang-btn {{ 'active' if session.get('lang', 'de') == 'de' }}">DE</a>
                 <a href="{{ url_for('visitor.set_language', lang_code='en') }}"

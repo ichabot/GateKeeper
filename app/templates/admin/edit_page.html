@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% set lang = session.get('lang', 'de') %}
 
-{% block title %}GateKeeper - {{ t("edit_page_title", lang) }}: {{ page.title_de }}{% endblock %}
+{% block title %}GateKeeper - {{ t("edit_page_title", lang) }}: {{ lang_attr(page, "title", lang) }}{% endblock %}
 
 {% block content %}
 <div class="admin-container">
     <div class="admin-header">
-        <h2>{{ t("edit_page_title", lang) }}: {{ page.title_de }}</h2>
+        <h2>{{ t("edit_page_title", lang) }}: {{ lang_attr(page, "title", lang) }}</h2>
         <div class="admin-actions">
             <a href="{{ url_for('admin.pages_list') }}" class="btn btn-secondary btn-sm">{{ t("back", lang) }}</a>
         </div>

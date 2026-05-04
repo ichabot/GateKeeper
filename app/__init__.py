@@ -57,6 +57,22 @@ def create_app(config_name: str | None = None) -> Flask:
     from app.translations import t as translate_fn
     app.jinja_env.globals["t"] = translate_fn
 
+    # Helper to get a language-specific attribute from a model instance
+    # Usage: {{ lang_attr(page, "title", lang) }} → page.title_fr or fallback
+    def lang_attr(obj, prefix, lang):
+        """Get obj.<prefix>_<lang> with fallback to _en then _de.
+        Works with both model instances (getattr) and dicts (key access)."""
+        for try_lang in (lang, "en", "de"):
+            key = f"{prefix}_{try_lang}"
+            if isinstance(obj, dict):
+                val = obj.get(key)
+            else:
+                val = getattr(obj, key, None)
+            if val:
+                return val
+        return ""
+    app.jinja_env.globals["lang_attr"] = lang_attr
+
     # Jinja2 filter for timezone conversion
     app.jinja_env.filters["to_berlin"] = to_berlin
 

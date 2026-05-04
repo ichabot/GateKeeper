@@ -15,7 +15,8 @@
     <div class="pages-grid">
         {% for page in pages %}
         <div class="page-card">
-            <h3>{{ page.title_de }}</h3>
+            {% set ptitle = lang_attr(page, "title", lang) %}
+            <h3>{{ ptitle }}</h3>
             <p class="page-updated">{{ t("last_edited", lang) }}: {{ page.updated_at.strftime('%d.%m.%Y %H:%M') if page.updated_at }}</p>
             <a href="{{ url_for('admin.edit_page', slug=page.slug) }}" class="btn btn-primary btn-sm">{{ t("edit", lang) }}</a>
         </div>
