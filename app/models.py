@@ -104,8 +104,10 @@ class Visitor(db.Model):
             return False
         if self.arrival_time is None:
             return False
-        now = datetime.now(timezone.utc)
-        return self.arrival_time.date() < now.date()
+        from app import BERLIN_TZ
+        now_berlin = datetime.now(BERLIN_TZ)
+        arrival_berlin = self.arrival_time.astimezone(BERLIN_TZ) if self.arrival_time.tzinfo else self.arrival_time
+        return arrival_berlin.date() < now_berlin.date()
 
     @property
     def has_positive_answer(self) -> bool:

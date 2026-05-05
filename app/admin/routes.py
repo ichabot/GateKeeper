@@ -16,7 +16,7 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
-from app import to_berlin
+from app import to_berlin, BERLIN_TZ
 from app.admin import admin_bp
 from app.admin.forms import EditPageForm, FilterForm, HealthQuestionForm, LoginForm, SmtpSettingsForm
 from app.extensions import db
@@ -108,10 +108,12 @@ def dashboard():
     elif status == "departed":
         query = query.filter(Visitor.departure_time.isnot(None))
     elif status == "missed":
-        today_start = datetime.combine(datetime.now(timezone.utc).date(), time.min).replace(tzinfo=timezone.utc)
+        berlin_today = datetime.now(BERLIN_TZ).date()
+        today_start_berlin = datetime.combine(berlin_today, time.min, tzinfo=BERLIN_TZ)
+        today_start_utc = today_start_berlin.astimezone(timezone.utc)
         query = query.filter(
             Visitor.departure_time.is_(None),
-            Visitor.arrival_time < today_start,
+            Visitor.arrival_time < today_start_utc,
         )
 
     # Date range filter - default to today if no date is provided
@@ -127,19 +129,19 @@ def dashboard():
         form.date_to.data = None
 
     if date_from is None and date_to is None and not request.args:
-        date_from = datetime.now(timezone.utc).date()
+        date_from = datetime.now(BERLIN_TZ).date()
         form.date_from.data = date_from
 
     if date_from:
+        # User enters Berlin dates — convert to UTC for DB query
+        start_berlin = datetime.combine(date_from, time.min, tzinfo=BERLIN_TZ)
         query = query.filter(
-            Visitor.arrival_time >= datetime.combine(date_from, time.min).replace(
-                tzinfo=timezone.utc
-            )
+            Visitor.arrival_time >= start_berlin.astimezone(timezone.utc)
         )
     if date_to:
+        end_berlin = datetime.combine(date_to, time.max, tzinfo=BERLIN_TZ)
         query = query.filter(
-            Visitor.arrival_time
-            <= datetime.combine(date_to, time.max).replace(tzinfo=timezone.utc)
+            Visitor.arrival_time <= end_berlin.astimezone(timezone.utc)
         )
 
     # Text search
@@ -156,10 +158,11 @@ def dashboard():
         )
 
     visitors = query.order_by(Visitor.arrival_time.desc()).all()
-    today_start = datetime.combine(datetime.now(timezone.utc).date(), time.min).replace(tzinfo=timezone.utc)
+    berlin_today = datetime.now(BERLIN_TZ).date()
+    today_start_utc = datetime.combine(berlin_today, time.min, tzinfo=BERLIN_TZ).astimezone(timezone.utc)
     on_site_count = Visitor.query.filter(
         Visitor.departure_time.is_(None),
-        Visitor.arrival_time >= today_start,
+        Visitor.arrival_time >= today_start_utc,
     ).count()
 
     return render_template(

@@ -562,16 +562,19 @@ def register_cli(app: Flask):
         from app.extensions import db
         from app.models import Visitor
 
-        today_start = datetime.combine(
-            datetime.now(timezone.utc).date(), time(0, 0, 0)
-        ).replace(tzinfo=timezone.utc)
+        berlin_today = datetime.now(BERLIN_TZ).date()
+        today_start_utc = datetime.combine(
+            berlin_today, time(0, 0, 0), tzinfo=BERLIN_TZ
+        ).astimezone(timezone.utc)
         missed = Visitor.query.filter(
             Visitor.departure_time.is_(None),
-            Visitor.arrival_time < today_start,
+            Visitor.arrival_time < today_start_utc,
         ).all()
         for v in missed:
+            # Set departure to 23:59:59 Berlin time on arrival day
+            arrival_berlin = v.arrival_time.astimezone(BERLIN_TZ) if v.arrival_time.tzinfo else v.arrival_time
             v.departure_time = datetime.combine(
-                v.arrival_time.date(), time(23, 59, 59)
-            ).replace(tzinfo=timezone.utc)
+                arrival_berlin.date(), time(23, 59, 59), tzinfo=BERLIN_TZ
+            ).astimezone(timezone.utc)
         db.session.commit()
         click.echo(f"Auto-checkout: {len(missed)} visitor(s) checked out.")

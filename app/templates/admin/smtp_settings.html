@@ -122,7 +122,7 @@
 
     {% if settings.updated_at %}
     <p style="font-size:0.8rem;color:#94a3b8;margin-top:1rem;">
-        {{ t("last_edited", lang) }}: {{ settings.updated_at.strftime('%d.%m.%Y %H:%M') }}
+        {{ t("last_edited", lang) }}: {{ (settings.updated_at|to_berlin).strftime('%d.%m.%Y %H:%M') }}
     </p>
     {% endif %}
 </div>
