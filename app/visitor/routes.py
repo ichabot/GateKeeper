@@ -157,8 +157,15 @@ def checkout_success():
 def info_page(slug):
     page = StaticPage.query.filter_by(slug=slug).first_or_404()
     lang = session.get("lang", "de")
-    title = getattr(page, f'title_{lang}', None) or page.title_de
-    content = getattr(page, f'content_{lang}', None) or page.content_de
+    # Fallback chain: lang → en → de (empty strings count as missing)
+    def _pick(prefix):
+        for try_lang in (lang, "en", "de"):
+            val = getattr(page, f"{prefix}_{try_lang}", None)
+            if val:  # skip None and empty string
+                return val
+        return ""
+    title = _pick("title")
+    content = _pick("content")
     return render_template(
         "visitor/info_page.html", title=title, content=content
     )

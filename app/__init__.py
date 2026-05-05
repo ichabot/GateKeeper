@@ -262,6 +262,99 @@ infectious skin diseases.</p>
 """
 
 
+_HYGIENE_FR = """\
+<p>Si vous avez répondu oui à une ou plusieurs questions, vous ne pouvez entrer dans la zone de production
+qu'accompagné ou après consultation avec la personne visitée.</p>
+<p>Indépendamment de cela, nous vous prions de respecter les règles d'hygiène suivantes :</p>
+<ol>
+<li>Pendant toute la durée de votre séjour dans les locaux de production, vous devez porter la blouse mise à disposition.</li>
+<li>Veuillez vous laver et désinfecter les mains avant d'entrer dans les locaux de production et mettre la coiffe prévue (filet à cheveux).</li>
+<li>Veuillez retirer montres et tout bijou.</li>
+<li>Veuillez ne fumer que dans les zones prévues à cet effet.</li>
+<li>Veuillez ne pas manger ni boire dans les locaux de production (y compris les chewing-gums).</li>
+<li>Veuillez ne pas porter de vernis à ongles ni de faux ongles.</li>
+<li>Les coupures doivent être protégées par un pansement spécial (disponible à la réception si nécessaire).</li>
+</ol>
+"""
+
+_HYGIENE_ES = """\
+<p>Si ha respondido afirmativamente a una o más preguntas, solo podrá entrar en la zona de producción
+acompañado o previa consulta con la persona visitada.</p>
+<p>Independientemente de ello, le rogamos que cumpla las siguientes normas de higiene:</p>
+<ol>
+<li>Durante toda su estancia en las instalaciones de producción deberá llevar la bata proporcionada.</li>
+<li>Lávese y desinfecte las manos antes de entrar en las instalaciones de producción y póngase la cobertura para el cabello (redecilla).</li>
+<li>Quítese relojes y cualquier tipo de joyería.</li>
+<li>Fume únicamente en las zonas habilitadas para ello.</li>
+<li>No coma ni beba en las instalaciones de producción (incluido chicle).</li>
+<li>No lleve esmalte de uñas ni uñas postizas.</li>
+<li>Las heridas cortantes deben protegerse con un apósito especial (disponible en recepción si es necesario).</li>
+</ol>
+"""
+
+_SAFETY_FR = """\
+<p>Madame, Monsieur,<br>
+Nous vous souhaitons la bienvenue dans notre entreprise.
+Dans l'intérêt de la sécurité, de l'hygiène et de la protection de l'environnement, nous vous prions
+de respecter strictement les points suivants pendant votre séjour :</p>
+<h3>Tabac</h3>
+<p>Il est strictement interdit de fumer sur l'ensemble du site (y compris les cigarettes électroniques).
+Il n'est permis de fumer que dans les zones fumeurs désignées.</p>
+<h3>Téléphones portables</h3>
+<p>Les téléphones portables ne peuvent être allumés qu'à l'extérieur et dans les bâtiments de bureaux.
+Les téléphones avec appareil photo intégré sont interdits dans l'usine.</p>
+<h3>Photographies</h3>
+<p>Les photographies à l'intérieur des bâtiments ne sont autorisées qu'avec l'accord de l'accompagnateur / du chef de service.</p>
+<h3>Bijoux</h3>
+<p>Le port de montres, colliers, boucles d'oreilles et bracelets est interdit dans toute la zone de production.</p>
+<h3>Zones de production</h3>
+<p>Il est interdit de manger ou de boire dans nos locaux de production. Les portes et portails doivent
+rester fermés en permanence. Vous ne pouvez vous rendre que directement à votre poste de travail.
+Dans toute la zone de production (zone d'hygiène), le port d'une coiffe (filet à cheveux) est obligatoire.</p>
+<h3>Sécurité au travail / Hygiène / Protection de l'environnement</h3>
+<p>Toutes les réglementations en vigueur concernant la sécurité au travail, l'hygiène et la protection
+de l'environnement doivent être strictement respectées.</p>
+<h3>Alarme incendie</h3>
+<p>En cas d'alarme incendie, quittez immédiatement les bâtiments. L'alerte est donnée par une sirène.
+Rendez-vous aux points de rassemblement (voir les plans d'évacuation affichés).</p>
+<h3>Maladies</h3>
+<p>Les visiteurs atteints de maladies à déclaration obligatoire selon la loi allemande sur la protection
+contre les infections (IfSG) §42 ne sont pas autorisés à entrer dans le bâtiment de production.</p>
+<p><strong>Merci – La direction</strong></p>
+"""
+
+_SAFETY_ES = """\
+<p>Estimado/a visitante,<br>
+Le damos la bienvenida a nuestra empresa.
+En aras de la seguridad, la higiene y la protección del medio ambiente, le rogamos
+que respete estrictamente los siguientes puntos durante su estancia:</p>
+<h3>Tabaco</h3>
+<p>Está estrictamente prohibido fumar en todo el recinto (incluidos cigarrillos electrónicos).
+Solo se permite fumar en las zonas habilitadas para fumadores.</p>
+<h3>Teléfonos móviles</h3>
+<p>Los teléfonos móviles solo pueden estar encendidos al aire libre y en los edificios de oficinas.
+Los teléfonos con cámara integrada están prohibidos en la fábrica.</p>
+<h3>Fotografías</h3>
+<p>Las fotografías dentro de los edificios solo están permitidas con la autorización del acompañante / jefe de departamento.</p>
+<h3>Joyas</h3>
+<p>No se permite el uso de relojes, collares, pendientes ni pulseras en toda la zona de producción.</p>
+<h3>Zonas de producción</h3>
+<p>No se permite comer ni beber en nuestras instalaciones de producción. Las puertas y portones deben
+permanecer cerrados en todo momento. Solo puede dirigirse directamente a su puesto de trabajo.
+En toda la zona de producción (zona de higiene) es obligatorio el uso de cobertura para el cabello (redecilla).</p>
+<h3>Seguridad laboral / Higiene / Protección medioambiental</h3>
+<p>Deben cumplirse estrictamente todas las normativas vigentes relativas a la seguridad laboral,
+la higiene y la protección del medio ambiente.</p>
+<h3>Alarma de incendio</h3>
+<p>En caso de alarma de incendio, abandone inmediatamente los edificios. La alerta se da mediante una sirena.
+Diríjase a los puntos de reunión correspondientes (véanse los planos de evacuación expuestos).</p>
+<h3>Enfermedades</h3>
+<p>Los visitantes con enfermedades de declaración obligatoria según la ley alemana de protección contra
+infecciones (IfSG) §42 no están autorizados a entrar en el edificio de producción.</p>
+<p><strong>Muchas gracias – La dirección</strong></p>
+"""
+
+
 def _migrate_add_language_columns(db):
     """Add FR/ES columns to existing SQLite tables (idempotent)."""
     import sqlite3
@@ -372,6 +465,34 @@ def _seed_defaults(db, AdminUser, StaticPage, SmtpSettings, HealthQuestion, app)
                 active=True
             ))
 
+    db.session.commit()
+
+    # Backfill FR/ES titles and placeholder content on existing pages
+    _backfill_fr_es = {
+        "emergency_contacts": ("Contacts", "Contactos",
+            "<p>Le contenu sera ajouté prochainement.</p>",
+            "<p>El contenido se añadirá próximamente.</p>"),
+        "emergency_plans": ("Plans d'urgence", "Planes de emergencia",
+            "<p>Le contenu sera ajouté prochainement.</p>",
+            "<p>El contenido se añadirá próximamente.</p>"),
+        "emergency_numbers": ("Numéros d'urgence", "Números de emergencia",
+            "<p>Le contenu sera ajouté prochainement.</p>",
+            "<p>El contenido se añadirá próximamente.</p>"),
+        "visitor_info": ("Informations visiteurs", "Información para visitantes",
+            "<p>Le contenu sera ajouté prochainement.</p>",
+            "<p>El contenido se añadirá próximamente.</p>"),
+        "hygiene_rules": ("Règles d'hygiène", "Normas de higiene",
+            _HYGIENE_FR, _HYGIENE_ES),
+        "safety_conduct": ("Règles de sécurité / conduite", "Normas de seguridad / conducta",
+            _SAFETY_FR, _SAFETY_ES),
+    }
+    for slug, (tfr, tes, cfr, ces) in _backfill_fr_es.items():
+        page = StaticPage.query.filter_by(slug=slug).first()
+        if page and not page.title_fr:
+            page.title_fr = tfr
+            page.title_es = tes
+            page.content_fr = cfr
+            page.content_es = ces
     db.session.commit()
 
 
