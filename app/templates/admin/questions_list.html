@@ -18,8 +18,7 @@
             <thead>
                 <tr>
                     <th style="width:60px;">{{ t("position", lang) }}</th>
-                    <th>{{ t("question_de", lang) }}</th>
-                    <th>{{ t("question_en", lang) }}</th>
+                    <th>{{ t("question_text", lang) }}</th>
                     <th style="width:100px;">{{ t("key", lang) }}</th>
                     <th style="width:80px;">{{ t("filter_status", lang) }}</th>
                     <th style="width:160px;">{{ t("actions", lang) }}</th>
@@ -29,8 +28,7 @@
                 {% for q in questions %}
                 <tr{% if not q.active %} style="opacity:0.5;"{% endif %}>
                     <td>{{ q.position }}</td>
-                    <td>{{ q.text_de }}</td>
-                    <td>{{ q.text_en }}</td>
+                    <td>{{ lang_attr(q, "text", lang) }}</td>
                     <td><code>{{ q.short_key }}</code></td>
                     <td>
                         {% if q.active %}
@@ -50,7 +48,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" class="empty-table">{{ t("no_questions", lang) }}</td>
+                    <td colspan="5" class="empty-table">{{ t("no_questions", lang) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

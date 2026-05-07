@@ -15,7 +15,7 @@
             {{ form.hidden_tag() }}
 
             <div class="form-group" style="margin-bottom:1.25rem;">
-                <label for="text_de">{{ form.text_de.label.text }}</label>
+                <label for="text_de">{{ t("question_text_de", lang) }}</label>
                 {{ form.text_de(id="text_de", class="form-input", rows=2, style="min-height:60px;") }}
                 {% if form.text_de.errors %}
                 <small class="error-text">{{ form.text_de.errors[0] }}</small>
@@ -23,7 +23,7 @@
             </div>
 
             <div class="form-group" style="margin-bottom:1.25rem;">
-                <label for="text_en">{{ form.text_en.label.text }}</label>
+                <label for="text_en">{{ t("question_text_en", lang) }}</label>
                 {{ form.text_en(id="text_en", class="form-input", rows=2, style="min-height:60px;") }}
                 {% if form.text_en.errors %}
                 <small class="error-text">{{ form.text_en.errors[0] }}</small>
@@ -31,7 +31,7 @@
             </div>
 
             <div class="form-group" style="margin-bottom:1.25rem;">
-                <label for="text_fr">{{ form.text_fr.label.text }}</label>
+                <label for="text_fr">{{ t("question_text_fr", lang) }}</label>
                 {{ form.text_fr(id="text_fr", class="form-input", rows=2, style="min-height:60px;") }}
                 {% if form.text_fr.errors %}
                 <small class="error-text">{{ form.text_fr.errors[0] }}</small>
@@ -39,7 +39,7 @@
             </div>
 
             <div class="form-group" style="margin-bottom:1.25rem;">
-                <label for="text_es">{{ form.text_es.label.text }}</label>
+                <label for="text_es">{{ t("question_text_es", lang) }}</label>
                 {{ form.text_es(id="text_es", class="form-input", rows=2, style="min-height:60px;") }}
                 {% if form.text_es.errors %}
                 <small class="error-text">{{ form.text_es.errors[0] }}</small>
@@ -48,15 +48,15 @@
 
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="short_key">{{ form.short_key.label.text }}</label>
-                    {{ form.short_key(id="short_key", class="form-input", placeholder="z.B. flu, diarrhea") }}
+                    <label for="short_key">{{ t("question_short_key", lang) }}</label>
+                    {{ form.short_key(id="short_key", class="form-input", placeholder="flu, diarrhea...") }}
                     {% if form.short_key.errors %}
                     <small class="error-text">{{ form.short_key.errors[0] }}</small>
                     {% endif %}
                 </div>
 
                 <div class="form-group">
-                    <label for="position">{{ form.position.label.text }}</label>
+                    <label for="position">{{ t("question_position", lang) }}</label>
                     {{ form.position(id="position", class="form-input", type="number") }}
                 </div>
             </div>
@@ -64,13 +64,13 @@
             <div class="dsgvo-section" style="margin-top:1.25rem;">
                 <label class="dsgvo-label">
                     {{ form.active(id="active") }}
-                    <span>{{ form.active.label.text }}</span>
+                    <span>{{ t("question_active", lang) }}</span>
                 </label>
             </div>
 
             <div class="form-actions">
                 <a href="{{ url_for('admin.questions_list') }}" class="btn btn-secondary">{{ t("cancel", lang) }}</a>
-                {{ form.submit(class="btn btn-primary") }}
+                <button type="submit" class="btn btn-primary">{{ t("save", lang) }}</button>
             </div>
         </form>
     </div>

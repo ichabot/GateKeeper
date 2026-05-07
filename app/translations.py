@@ -181,6 +181,31 @@ TRANSLATIONS = {
 
     # --- Admin: SMTP ---
     "email_settings": {"de": "E-Mail Einstellungen (SMTP)", "en": "Email Settings (SMTP)", "fr": "Paramètres e-mail (SMTP)", "es": "Configuración de correo (SMTP)"},
+    # --- Admin: SMTP form ---
+    "smtp_host": {"de": "SMTP Host", "en": "SMTP Host", "fr": "Hôte SMTP", "es": "Host SMTP"},
+    "smtp_port": {"de": "SMTP Port", "en": "SMTP Port", "fr": "Port SMTP", "es": "Puerto SMTP"},
+    "smtp_user": {"de": "Benutzername (SMTP-Auth)", "en": "Username (SMTP Auth)", "fr": "Nom d'utilisateur (SMTP Auth)", "es": "Usuario (SMTP Auth)"},
+    "smtp_password": {"de": "Passwort", "en": "Password", "fr": "Mot de passe", "es": "Contraseña"},
+    "smtp_password_hint": {"de": "leer lassen = unverändertes Passwort beibehalten", "en": "leave empty to keep current password", "fr": "laisser vide pour conserver le mot de passe actuel", "es": "dejar vacío para mantener la contraseña actual"},
+    "smtp_password_saved": {"de": "Passwort ist gespeichert — leer lassen zum Beibehalten", "en": "Password saved — leave empty to keep", "fr": "Mot de passe enregistré — laisser vide pour conserver", "es": "Contraseña guardada — dejar vacío para mantener"},
+    "smtp_sender": {"de": "Absender-Adresse (Von)", "en": "Sender address (From)", "fr": "Adresse de l'expéditeur (De)", "es": "Dirección del remitente (De)"},
+    "smtp_recipients": {"de": "Empfänger-Adressen (kommagetrennt)", "en": "Recipient addresses (comma-separated)", "fr": "Adresses des destinataires (séparées par des virgules)", "es": "Direcciones de destinatarios (separadas por comas)"},
+    "smtp_emergency_recipients": {"de": "Notfall-Empfänger (kommagetrennt)", "en": "Emergency recipients (comma-separated)", "fr": "Destinataires d'urgence (séparés par des virgules)", "es": "Destinatarios de emergencia (separados por comas)"},
+    "smtp_use_tls": {"de": "STARTTLS verwenden (empfohlen, Port 587)", "en": "Use STARTTLS (recommended, port 587)", "fr": "Utiliser STARTTLS (recommandé, port 587)", "es": "Usar STARTTLS (recomendado, puerto 587)"},
+    "smtp_enabled": {"de": "Monatlicher Versand aktiv (automatisch per Cronjob)", "en": "Monthly report active (automatic via cron)", "fr": "Envoi mensuel actif (automatique via cron)", "es": "Envío mensual activo (automático por cron)"},
+    "smtp_save": {"de": "Einstellungen speichern", "en": "Save settings", "fr": "Enregistrer les paramètres", "es": "Guardar configuración"},
+    "smtp_test": {"de": "Test-E-Mail", "en": "Test email", "fr": "E-mail de test", "es": "Correo de prueba"},
+    "smtp_send_report": {"de": "Vormonatsbericht", "en": "Previous month report", "fr": "Rapport du mois précédent", "es": "Informe del mes anterior"},
+
+    # --- Admin: Question form ---
+    "question_text_de": {"de": "Frage (DE)", "en": "Question (DE)", "fr": "Question (DE)", "es": "Pregunta (DE)"},
+    "question_text_en": {"de": "Frage (EN)", "en": "Question (EN)", "fr": "Question (EN)", "es": "Pregunta (EN)"},
+    "question_text_fr": {"de": "Frage (FR)", "en": "Question (FR)", "fr": "Question (FR)", "es": "Pregunta (FR)"},
+    "question_text_es": {"de": "Frage (ES)", "en": "Question (ES)", "fr": "Question (ES)", "es": "Pregunta (ES)"},
+    "question_short_key": {"de": "Kurzschlüssel", "en": "Short key", "fr": "Clé courte", "es": "Clave corta"},
+    "question_position": {"de": "Position / Reihenfolge", "en": "Position / Order", "fr": "Position / Ordre", "es": "Posición / Orden"},
+    "question_active": {"de": "Aktiv (wird im Check-in angezeigt)", "en": "Active (shown in check-in form)", "fr": "Actif (affiché dans le formulaire d'enregistrement)", "es": "Activo (mostrado en el formulario de registro)"},
+    "question_text": {"de": "Frage", "en": "Question", "fr": "Question", "es": "Pregunta"},
 }
 
 

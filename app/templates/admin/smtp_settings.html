@@ -18,16 +18,15 @@
             {{ form.hidden_tag() }}
 
             <div class="form-group" style="margin-bottom:1rem;">
-                <label for="smtp_host">{{ form.smtp_host.label.text }}</label>
+                <label for="smtp_host">{{ t("smtp_host", lang) }}</label>
                 {{ form.smtp_host(id="smtp_host", class="form-input", placeholder="smtp.ionos.de") }}
                 {% if form.smtp_host.errors %}
                 <small class="error-text">{{ form.smtp_host.errors[0] }}</small>
                 {% endif %}
-                <small style="color:#64748b;">Für 1&amp;1 IONOS: <code>smtp.ionos.de</code></small>
             </div>
 
             <div class="form-group" style="margin-bottom:1rem;">
-                <label for="smtp_port">{{ form.smtp_port.label.text }}</label>
+                <label for="smtp_port">{{ t("smtp_port", lang) }}</label>
                 {{ form.smtp_port(id="smtp_port", class="form-input", placeholder="587") }}
                 {% if form.smtp_port.errors %}
                 <small class="error-text">{{ form.smtp_port.errors[0] }}</small>
@@ -36,32 +35,32 @@
             </div>
 
             <div class="form-group" style="margin-bottom:1rem;">
-                <label for="smtp_user">{{ form.smtp_user.label.text }}</label>
-                {{ form.smtp_user(id="smtp_user", class="form-input", placeholder="info@beispiel.de", autocomplete="off") }}
+                <label for="smtp_user">{{ t("smtp_user", lang) }}</label>
+                {{ form.smtp_user(id="smtp_user", class="form-input", placeholder="info@example.com", autocomplete="off") }}
                 {% if form.smtp_user.errors %}
                 <small class="error-text">{{ form.smtp_user.errors[0] }}</small>
                 {% endif %}
             </div>
 
             <div class="form-group" style="margin-bottom:1rem;">
-                <label for="smtp_password">{{ form.smtp_password.label.text }}</label>
+                <label for="smtp_password">{{ t("smtp_password", lang) }} <small style="color:#64748b;">({{ t("smtp_password_hint", lang) }})</small></label>
                 {{ form.smtp_password(id="smtp_password", class="form-input", autocomplete="new-password") }}
                 {% if settings.smtp_password %}
-                <small style="color:#16a34a;">&#10003; Passwort ist gespeichert – leer lassen zum Beibehalten</small>
+                <small style="color:#16a34a;">&#10003; {{ t("smtp_password_saved", lang) }}</small>
                 {% endif %}
             </div>
 
             <div class="form-group" style="margin-bottom:1rem;">
-                <label for="smtp_sender">{{ form.smtp_sender.label.text }}</label>
-                {{ form.smtp_sender(id="smtp_sender", class="form-input", placeholder="gatekeeper@beispiel.de") }}
+                <label for="smtp_sender">{{ t("smtp_sender", lang) }}</label>
+                {{ form.smtp_sender(id="smtp_sender", class="form-input", placeholder="gatekeeper@example.com") }}
                 {% if form.smtp_sender.errors %}
                 <small class="error-text">{{ form.smtp_sender.errors[0] }}</small>
                 {% endif %}
             </div>
 
             <div class="form-group" style="margin-bottom:1rem;">
-                <label for="smtp_recipients">{{ form.smtp_recipients.label.text }}</label>
-                {{ form.smtp_recipients(id="smtp_recipients", class="form-input", placeholder="chef@firma.de, buero@firma.de") }}
+                <label for="smtp_recipients">{{ t("smtp_recipients", lang) }}</label>
+                {{ form.smtp_recipients(id="smtp_recipients", class="form-input", placeholder="admin@company.com, office@company.com") }}
                 {% if form.smtp_recipients.errors %}
                 <small class="error-text">{{ form.smtp_recipients.errors[0] }}</small>
                 {% endif %}
@@ -69,9 +68,9 @@
 
             <div class="form-group" style="margin-bottom:1rem;padding:1rem;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;">
                 <label for="emergency_recipients" style="color:#991b1b;font-weight:700;">
-                    &#128680; {{ form.emergency_recipients.label.text }}
+                    &#128680; {{ t("smtp_emergency_recipients", lang) }}
                 </label>
-                {{ form.emergency_recipients(id="emergency_recipients", class="form-input", placeholder="sicherheit@firma.de, brandschutz@firma.de") }}
+                {{ form.emergency_recipients(id="emergency_recipients", class="form-input", placeholder="security@company.com") }}
                 {% if form.emergency_recipients.errors %}
                 <small class="error-text">{{ form.emergency_recipients.errors[0] }}</small>
                 {% endif %}
@@ -80,18 +79,18 @@
             <div class="form-group" style="margin-bottom:1rem;">
                 <label class="dsgvo-label">
                     {{ form.use_tls(id="use_tls") }}
-                    <span>{{ form.use_tls.label.text }}</span>
+                    <span>{{ t("smtp_use_tls", lang) }}</span>
                 </label>
             </div>
 
             <div class="form-group" style="margin-bottom:1.5rem;">
                 <label class="dsgvo-label">
                     {{ form.enabled(id="enabled") }}
-                    <span>{{ form.enabled.label.text }}</span>
+                    <span>{{ t("smtp_enabled", lang) }}</span>
                 </label>
             </div>
 
-            {{ form.submit(class="btn btn-primary") }}
+            <button type="submit" class="btn btn-primary">{{ t("smtp_save", lang) }}</button>
         </form>
     </div>
 
@@ -101,7 +100,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-secondary"
                     {% if not settings.smtp_host %}disabled{% endif %}>
-                &#9993; Test-E-Mail
+                &#9993; {{ t("smtp_test", lang) }}
             </button>
         </form>
 
@@ -109,7 +108,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-secondary"
                     {% if not settings.smtp_host %}disabled{% endif %}>
-                &#128197; Vormonatsbericht
+                &#128197; {{ t("smtp_send_report", lang) }}
             </button>
         </form>
     </div>
