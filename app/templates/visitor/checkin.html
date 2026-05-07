@@ -70,11 +70,7 @@
                 {% for q in questions %}
                 <div class="question-item">
                     <span class="question-text">
-                        {% set qtext = q.text_de %}
-                        {% if lang == 'en' and q.text_en %}{% set qtext = q.text_en %}
-                        {% elif lang == 'fr' and q.text_fr %}{% set qtext = q.text_fr %}
-                        {% elif lang == 'es' and q.text_es %}{% set qtext = q.text_es %}{% endif %}
-                        {{ loop.index }}. {{ qtext }}
+                        {{ loop.index }}. {{ lang_attr(q, "text", lang) }}
                     </span>
                     <div class="question-radios">
                         <label class="question-radio-label">
