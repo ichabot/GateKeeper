@@ -9,17 +9,17 @@
         <h2>{{ t("admin_dashboard", lang) }}</h2>
         <div class="admin-actions">
             <span class="badge badge-info">{{ t("currently_on_site", lang) }}: {{ on_site_count }}</span>
-            <form method="POST" action="{{ url_for('admin.emergency_send') }}" style="display:inline;"
+            <a href="{{ url_for('admin.questions_list') }}" class="btn btn-secondary btn-sm">{{ t("health_questions", lang) }}</a>
+            <a href="{{ url_for('admin.pages_list') }}" class="btn btn-secondary btn-sm">{{ t("manage_pages", lang) }}</a>
+            <a href="{{ url_for('admin.smtp_settings') }}" class="btn btn-secondary btn-sm">{{ t("email_smtp", lang) }}</a>
+            <a href="{{ url_for('admin.logout') }}" class="btn btn-secondary btn-sm">{{ t("logout", lang) }}</a>
+            <form method="POST" action="{{ url_for('admin.emergency_send') }}" style="display:inline;margin-left:auto;"
                   onsubmit="return confirm('{{ t("emergency_confirm", lang) }}')">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-sm" style="background:#dc2626;color:white;font-weight:700;">
                     &#128680; {{ t("emergency_send", lang) }}
                 </button>
             </form>
-            <a href="{{ url_for('admin.questions_list') }}" class="btn btn-secondary btn-sm">{{ t("health_questions", lang) }}</a>
-            <a href="{{ url_for('admin.pages_list') }}" class="btn btn-secondary btn-sm">{{ t("manage_pages", lang) }}</a>
-            <a href="{{ url_for('admin.smtp_settings') }}" class="btn btn-secondary btn-sm">{{ t("email_smtp", lang) }}</a>
-            <a href="{{ url_for('admin.logout') }}" class="btn btn-secondary btn-sm">{{ t("logout", lang) }}</a>
         </div>
     </div>
 
