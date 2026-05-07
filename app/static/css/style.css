@@ -551,6 +551,21 @@ select.form-input {
     background-color: #f8fafc !important;
 }
 
+/* Ensure native date picker popup works */
+input[type="date"].form-input {
+    appearance: auto;
+    -webkit-appearance: auto;
+}
+
+input[type="date"].form-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+}
+
+input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
 .error-text {
     color: var(--gk-danger);
     font-size: 0.85rem;

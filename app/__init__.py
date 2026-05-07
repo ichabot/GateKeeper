@@ -543,6 +543,7 @@ def register_cli(app: Flask):
     @app.cli.command("send-monthly-report")
     def send_monthly_report_cmd():
         """Send previous month's visitor CSV report via SMTP (for cron use)."""
+        from app.extensions import db
         from app.models import SmtpSettings
         from app.mail import get_previous_month, send_monthly_report
 

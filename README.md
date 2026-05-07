@@ -277,12 +277,7 @@ Add, edit, reorder, or deactivate health questionnaire questions in the admin ar
 - Visitors must consent to the privacy policy before check-in
 - Digital signature captured and stored (Base64 PNG)
 - Visitors cannot view other visitors' data
-- Automatic data cleanup via cron:
-
-```bash
-# Delete visitor data older than 90 days (daily at 2:00 AM)
-0 2 * * * cd /opt/gatekeeper && venv/bin/flask cleanup-visitors --days 90
-```
+- Automatic data cleanup via cron (see [Cron Jobs](#-cron-jobs) below)
 
 ---
 
