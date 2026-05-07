@@ -495,6 +495,28 @@ def _seed_defaults(db, AdminUser, StaticPage, SmtpSettings, HealthQuestion, app)
             page.content_es = ces
     db.session.commit()
 
+    # Backfill FR/ES on existing health questions
+    _hq_backfill = {
+        "flu": ("Maladies grippales (toux, rhume, fièvre)",
+                "Enfermedades gripales (tos, resfriado, fiebre)"),
+        "diarrhea": ("Diarrhée ou vomissements",
+                     "Diarrea o vómitos"),
+        "food_poisoning": ("Intoxication alimentaire à Salmonella, Campylobacter, Shigella ou E. Coli",
+                           "Intoxicación alimentaria por Salmonella, Campylobacter, Shigella o E. Coli"),
+        "parasites": ("Infections parasitaires",
+                      "Infecciones parasitarias"),
+        "ent": ("Infections ORL (oreilles, nez, gorge)",
+                "Infecciones de oídos, nariz o garganta"),
+        "skin": ("Maladies cutanées ou plaies ouvertes et purulentes",
+                 "Enfermedades cutáneas o heridas abiertas y purulentas"),
+    }
+    for key, (tfr, tes) in _hq_backfill.items():
+        q = HealthQuestion.query.filter_by(short_key=key).first()
+        if q and not q.text_fr:
+            q.text_fr = tfr
+            q.text_es = tes
+    db.session.commit()
+
 
 def register_cli(app: Flask):
     """Register custom Flask CLI commands."""
