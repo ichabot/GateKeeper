@@ -968,7 +968,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .admin-login-card {
-    max-width: 400px;
+    max-width: 440px;
     margin: 3rem auto;
 }
 
@@ -976,20 +976,22 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
     display: flex;
     flex-direction: row;
     gap: 1rem;
-    justify-content: flex-end;
+    justify-content: stretch;
     align-items: center;
 }
 
 .admin-login-card .form-actions .btn,
 .admin-login-card .form-actions a,
 .admin-login-card .form-actions input[type="submit"] {
+    flex: 1 1 0;
     flex-direction: row;
-    padding: 0.75rem 2rem;
+    padding: 0.75rem 1rem;
     width: auto !important;
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
     min-height: auto;
+    white-space: nowrap;
 }
 
 /* Filter */
