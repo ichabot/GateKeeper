@@ -9,7 +9,7 @@
     <meta name="google" content="notranslate">
     <title>{% block title %}GateKeeper{% endblock %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=14">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=16">
 </head>
 <body>
     <!-- Side Navigation Overlay -->
@@ -74,13 +74,17 @@
         <div class="header-right">
             <div class="lang-switcher" translate="no">
                 <a href="{{ url_for('visitor.set_language', lang_code='de') }}"
-                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'de' }}">DE</a>
+                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'de' }}"
+                   title="Deutsch" aria-label="Deutsch"><img src="{{ url_for('static', filename='flags/de.svg') }}" alt="DE"></a>
                 <a href="{{ url_for('visitor.set_language', lang_code='en') }}"
-                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'en' }}">EN</a>
+                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'en' }}"
+                   title="English" aria-label="English"><img src="{{ url_for('static', filename='flags/gb.svg') }}" alt="EN"></a>
                 <a href="{{ url_for('visitor.set_language', lang_code='fr') }}"
-                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'fr' }}">FR</a>
+                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'fr' }}"
+                   title="Français" aria-label="Français"><img src="{{ url_for('static', filename='flags/fr.svg') }}" alt="FR"></a>
                 <a href="{{ url_for('visitor.set_language', lang_code='es') }}"
-                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'es' }}">ES</a>
+                   class="lang-btn {{ 'active' if session.get('lang', 'de') == 'es' }}"
+                   title="Español" aria-label="Español"><img src="{{ url_for('static', filename='flags/es.svg') }}" alt="ES"></a>
             </div>
         </div>
     </header>
