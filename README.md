@@ -11,14 +11,6 @@ oversight, reporting, and GDPR tooling.
 
 ---
 
-## 📸 Screenshots
-
-| Home | Check-in | Admin Dashboard |
-|------|----------|-----------------|
-| ![Home](docs/screenshots/home.png) | ![Check-in](docs/screenshots/checkin.png) | ![Dashboard](docs/screenshots/admin-dashboard.png) |
-
----
-
 ## ✨ Features
 
 ### Kiosk (visitor self-service)
