@@ -17,7 +17,7 @@ oversight, reporting, and GDPR tooling.
 - **Guided check-in** — name, company, host, optional license plate, digital signature, GDPR consent.
 - **Health questionnaire** — admin-configurable yes/no questions. Each question has an expected answer; a deviation blocks check-in.
 - **PIN check-out** — a short PIN is issued at check-in; visitors check out on a touch numpad.
-- **Returning-visitor pass ("Besucherausweis")** — opt-in. Stores only master data (never health answers) behind a QR token. On the next visit the kiosk scans it to pre-fill the form, and the visitor can **check out by scanning the pass** instead of typing the PIN.
+- **Returning-visitor pass** — opt-in. Stores only master data (never health answers) behind a QR token. On the next visit the kiosk scans it to pre-fill the form, and the visitor can **check out by scanning the pass** instead of typing the PIN.
 - **Multi-language** — German, English, French, Spanish, switchable with one tap.
 - **Info hub** — emergency contacts, directions, hygiene & safety pages, all editable in the admin area.
 - **iPad-friendly** — screen Wake Lock keeps the display on, auto-return to the start screen after each action, camera QR scanning (over HTTPS) with a keyboard-wedge / manual fallback.
