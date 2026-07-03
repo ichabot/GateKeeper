@@ -97,14 +97,16 @@ Open the app and tap the **shield icon** (top-right) to sign in.
 | Username | `admin` |
 | Password | `admin` |
 
-Change it immediately:
+Change it immediately in **Admin → Settings → Users**, where you can also
+add, delete, and reset passwords for admin accounts.
+
+**Recovery only** — if you're locked out (forgot the password), reset it from
+the server:
 
 ```bash
 cd /opt/gatekeeper && source venv/bin/activate
-flask seed-admin            # interactive / resets the admin password
+flask seed-admin            # interactively set/reset the admin password
 ```
-
-…or create additional accounts in **Admin → Settings → Users**.
 
 ---
 
