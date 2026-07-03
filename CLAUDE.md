@@ -88,7 +88,10 @@ deploy/setup.sh      Ubuntu-Deployment (gunicorn+systemd, Cron, kein Node); gate
 `GET /api/csrf` · `GET /api/bootstrap` · `POST /api/checkin` · `POST /api/checkout` ·
 `POST /api/profile/lookup` (Besucherausweis-Token → Stammdaten für Vorausfüllung).
 `POST /api/checkin` akzeptiert `save_profile` (bool) + `profile_token` (bei Wiederkommen)
-und liefert bei Profil `pass_token` + `pass_qr` zurück.
+und liefert bei Profil `pass_token` + `pass_qr` zurück. Blockt einen doppelten
+Check-in mit HTTP 409 `already_checked_in`, wenn dieselbe Person bereits anwesend
+ist (Abgleich Vor-/Nachname + Firma, case-insensitive, bzw. `profile_token`); nach
+erfolgtem Check-out ist ein erneuter Check-in am selben Tag wieder möglich.
 `POST /api/checkout` nimmt `code` (oder `pin`): rein numerisch → PIN, sonst (bzw. mit
 `GKP:`-Prefix) → Besucherausweis-Token; sucht den passenden aktiven Besuch und checkt aus.
 

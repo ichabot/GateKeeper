@@ -194,6 +194,7 @@ export function Kiosk({ ctx, initialPin }) {
       setScreen('done'); startAuto(res.pass_qr ? 60 : 30);
     } catch (e) {
       if (e.status === 422) { setScreen('health'); setTried(true); showToast(t.healthBlockMsg); }
+      else if (e.status === 409) { showToast(t.alreadyCheckedIn); goWelcome(); }
       else { showToast(t.signRequired); }
     } finally { setBusy(false); }
   }

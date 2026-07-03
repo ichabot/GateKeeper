@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 from flask import Blueprint, jsonify, request
 from flask_wtf.csrf import generate_csrf
+from sqlalchemy import func, or_
 
 from app.extensions import db
 from app.api import iso, settings_public
@@ -102,6 +103,25 @@ def checkin():
     # Required fields
     if not (first and last and company and host):
         return jsonify({"error": "missing_fields"}), 400
+
+    # Prevent a duplicate active check-in: the same person is already on site
+    # (not yet checked out). Match on name + company (case-insensitive), or on
+    # the returning-visitor pass token when checking in via a pass. A visitor
+    # who has already checked out may check in again the same day.
+    dup_conds = [
+        (func.lower(Visitor.first_name) == first.lower())
+        & (func.lower(Visitor.last_name) == last.lower())
+        & (func.lower(Visitor.company) == company.lower())
+    ]
+    if profile_token:
+        dup_conds.append(Visitor.profile_token == profile_token.upper())
+    already = (
+        Visitor.query
+        .filter(Visitor.departure_time.is_(None), or_(*dup_conds))
+        .first()
+    )
+    if already:
+        return jsonify({"error": "already_checked_in"}), 409
 
     # Consents (all three mandatory)
     if not (consent.get("ds") and consent.get("hy") and consent.get("sf")):
