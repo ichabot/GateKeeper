@@ -45,7 +45,7 @@ app/
         main.mjs     App-Wurzel: lädt /api/bootstrap, Routing kiosk/admin, Toast.
         api.mjs      fetch-Wrapper (apiGet/apiPost/... ) inkl. X-CSRFToken-Header.
         i18n.mjs     I18N (DE/EN/FR/ES), tt(lang), pick(obj,lang).
-        theme.mjs    PALETTES (5 Akzente), applyAccent(), backdropFor().
+        theme.mjs    PALETTES (5 Akzente) + freier Hex-Akzent, applyAccent(), backdropFor().
         wakeLock.mjs iPad wach halten (Screen Wake Lock API + Re-Acquire).
         markdown.mjs blocksOf() — "## Überschrift" + Absätze.
         format.mjs   Datums-/Dauer-Formatierung (locale).

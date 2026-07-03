@@ -9,12 +9,39 @@ export const PALETTES = {
 
 export const ACCENT_KEYS = Object.keys(PALETTES);
 
+// A custom accent is a plain #rrggbb hex (stored instead of a palette key).
+export function isHexAccent(name) {
+  return typeof name === 'string' && /^#?[0-9a-fA-F]{6}$/.test(name.trim());
+}
+
+function _rgb(hex) {
+  const n = parseInt(hex.trim().replace('#', ''), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function _hex(rgb) {
+  return '#' + rgb.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+}
+// Mix `rgb` toward `target` by factor t (0..1).
+function _mix(rgb, target, t) {
+  return rgb.map((v, i) => v + (target[i] - v) * t);
+}
+
 export function applyAccent(name) {
-  const p = PALETTES[name] || PALETTES.blau;
+  let accent, dark, soft;
+  if (PALETTES[name]) {
+    [accent, dark, soft] = PALETTES[name];
+  } else if (isHexAccent(name)) {
+    const rgb = _rgb(name);
+    accent = _hex(rgb);
+    dark = _hex(_mix(rgb, [0, 0, 0], 0.22));        // darker for hover/pressed states
+    soft = _hex(_mix(rgb, [255, 255, 255], 0.9));   // very light tint for backgrounds
+  } else {
+    [accent, dark, soft] = PALETTES.blau;
+  }
   const r = document.documentElement.style;
-  r.setProperty('--accent', p[0]);
-  r.setProperty('--accent-dark', p[1]);
-  r.setProperty('--accent-soft', p[2]);
+  r.setProperty('--accent', accent);
+  r.setProperty('--accent-dark', dark);
+  r.setProperty('--accent-soft', soft);
 }
 
 export const BACKDROPS = {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'preact/hooks';
 import { html, Icon } from '../ui.mjs';
 import { apiGet, apiPut, apiPost, apiDelete, download } from '../api.mjs';
-import { applyAccent, ACCENT_KEYS, PALETTES } from '../theme.mjs';
+import { applyAccent, ACCENT_KEYS, PALETTES, isHexAccent } from '../theme.mjs';
 import { fmtDate } from '../format.mjs';
 
 const SUBS = [
@@ -121,6 +121,16 @@ export function SettingsTab({ hub }) {
       </div>
     </div>`;
   } else if (sub === 'design') {
+    const accentIsCustom = isHexAccent(branding.accent);
+    const accentPicker = accentIsCustom
+      ? (branding.accent[0] === '#' ? branding.accent : '#' + branding.accent)
+      : ((PALETTES[branding.accent] && PALETTES[branding.accent][0]) || '#2f6fed');
+    const onHexInput = (v) => {
+      let val = (v || '').trim();
+      if (val && val[0] !== '#') val = '#' + val;
+      setBranding((b) => ({ ...b, accent: val }));
+      if (/^#[0-9a-fA-F]{6}$/.test(val)) applyAccent(val);
+    };
     panel = html`<div>
       <p class="gk-muted" style=${{ marginTop: 0 }}>${t.designHint}</p>
       ${field(t.fldCompany, branding.company_name, (v) => setBranding({ ...branding, company_name: v }))}
@@ -140,9 +150,17 @@ export function SettingsTab({ hub }) {
       </div>
       <div class="gk-field" style=${{ marginBottom: '18px' }}>
         <span class="gk-field__label">${t.fldAccent}</span>
-        <div class="gk-swatches">
+        <div class="gk-swatches" style=${{ marginBottom: '12px' }}>
           ${ACCENT_KEYS.map((k) => html`<button key=${k} class=${'gk-swatch' + (branding.accent === k ? ' is-on' : '')}
             style=${{ background: PALETTES[k][0] }} title=${k} onClick=${() => chooseAccent(k)}></button>`)}
+        </div>
+        <div class="gk-row" style=${{ gap: '10px', alignItems: 'center' }}>
+          <input type="color" class=${'gk-color' + (accentIsCustom ? ' is-on' : '')} value=${accentPicker}
+            onInput=${(e) => chooseAccent(e.target.value)} />
+          <input class="gk-input" style=${{ maxWidth: '150px' }} spellcheck="false"
+            value=${accentIsCustom ? branding.accent : ''} placeholder="#1F4C5C"
+            onInput=${(e) => onHexInput(e.target.value)} />
+          <span class="gk-muted" style=${{ fontSize: '12.5px' }}>${t.customColor}</span>
         </div>
       </div>
       <div class="gk-actions"><button class="gk-btn" disabled=${busy} onClick=${save}>${t.save}</button></div>

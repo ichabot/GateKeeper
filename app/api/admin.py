@@ -2,6 +2,7 @@
 
 import io
 import os
+import re
 import time as _time
 from collections import defaultdict, deque
 from datetime import datetime, time, timedelta, timezone
@@ -491,7 +492,10 @@ def settings_put():
         if "company_name" in branding:
             s.company_name = (branding["company_name"] or "").strip() or "GateKeeper"
         if "accent" in branding:
-            s.accent = branding["accent"]
+            a = (branding["accent"] or "").strip()
+            # Accept a preset palette key or a custom #rrggbb hex; ignore garbage.
+            if a in ("blau", "gruen", "violett", "anthrazit", "bernstein") or re.fullmatch(r"#[0-9a-fA-F]{6}", a):
+                s.accent = a
         if "kiosk_backdrop" in kiosk:
             s.kiosk_backdrop = kiosk["kiosk_backdrop"]
         if "collect_plate" in kiosk:

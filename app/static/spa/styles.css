@@ -461,6 +461,12 @@ a { color: var(--accent); }
 .gk-swatch { width: 40px; height: 40px; border-radius: 11px; border: 3px solid transparent; cursor: pointer; box-shadow: var(--shadow-sm); }
 .gk-swatch.is-on { border-color: var(--navy); }
 
+/* native colour picker for a custom accent hex */
+.gk-color { width: 46px; height: 40px; padding: 3px; border: 1px solid var(--line-strong); border-radius: 11px; background: var(--panel); cursor: pointer; }
+.gk-color.is-on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.gk-color::-webkit-color-swatch-wrapper { padding: 0; }
+.gk-color::-webkit-color-swatch { border: none; border-radius: 7px; }
+
 .gk-switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; color: var(--ink); }
 .gk-switch input { width: 44px; height: 26px; appearance: none; background: var(--line-strong); border-radius: 20px; position: relative; cursor: pointer; transition: background .15s; flex: none; }
 .gk-switch input:checked { background: var(--accent); }
