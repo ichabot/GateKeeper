@@ -14,6 +14,7 @@ from flask import Flask, abort, jsonify, send_from_directory
 # to execute them. Register it so Flask's static handler (behind gunicorn)
 # serves .mjs correctly.
 mimetypes.add_type("text/javascript", ".mjs")
+mimetypes.add_type("font/woff2", ".woff2")
 
 # Berlin timezone for display conversions
 BERLIN_TZ = ZoneInfo("Europe/Berlin")
@@ -53,10 +54,9 @@ def create_app(config_name: str | None = None) -> Flask:
     os.makedirs(upload, exist_ok=True)
 
     # --- Extensions --------------------------------------------------------
-    from app.extensions import db, migrate, login_manager, csrf
+    from app.extensions import db, login_manager, csrf
 
     db.init_app(app)
-    migrate.init_app(app, db)
     login_manager.init_app(app)
     csrf.init_app(app)
 

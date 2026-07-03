@@ -11,8 +11,6 @@ load_dotenv()
 class BaseConfig:
     SECRET_KEY = os.environ.get("SECRET_KEY", "")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    LANGUAGES = ["de", "en", "fr", "es"]
-    BABEL_DEFAULT_LOCALE = "de"
     ADMIN_DEFAULT_PASSWORD = os.environ.get("ADMIN_DEFAULT_PASSWORD", "admin")
 
     # Uploads (logo). Absolute path resolved against instance/ in the app factory
@@ -55,9 +53,6 @@ class ProductionConfig(BaseConfig):
         "DATABASE_URL",
         "sqlite:///gatekeeper.db",
     )
-
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
 
     @classmethod
     def init_app(cls, app):

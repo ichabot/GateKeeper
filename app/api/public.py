@@ -166,13 +166,10 @@ def checkin():
 
     db.session.commit()
 
-    # Build a scannable QR encoding a check-out deep link.
-    from app.qr import qr_svg
-    checkout_url = f"{request.url_root}?co={pin}"
-    svg = qr_svg(checkout_url)
-
-    resp = {"pin": pin, "qr_svg": svg}
+    resp = {"pin": pin}
     if prof is not None:
+        # Scannable QR encoding the returning-visitor pass token (offline).
+        from app.qr import qr_svg
         resp["pass_token"] = prof.token
         resp["pass_qr"] = qr_svg(f"GKP:{prof.token}")
     return jsonify(resp), 201

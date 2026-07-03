@@ -23,7 +23,7 @@ Planungsdokumente: `REBUILD-PLAN.md` und `INFOS-NICHT-UPLOADEN/ANALYSE-Prototyp.
 app/
   __init__.py        App-Factory: DB-Init, idempotente Migrationen, Seeds,
                      StaticPage→Markdown-Migration, SPA-Serving, CLI-Befehle.
-  extensions.py      db, migrate, login_manager, csrf (babel ungenutzt).
+  extensions.py      db, login_manager, csrf.
   models.py          SQLAlchemy-Modelle (siehe unten).
   seed_content.py    Default-Inhalte (Info-Kategorien, Health-Intro/-Fragen, Branding).
   audit.py           log_audit(action, detail) → AuditLog.
@@ -38,9 +38,10 @@ app/
                      health, settings, logo, emergency, smtp/test, content export/import).
   static/
     spa/
-      index.html     SPA-Shell (Import-Map, Google-Fonts, styles.css, main.mjs).
-      styles.css     Design-Tokens + Komponenten-CSS.
-      vendor/        preact.mjs, hooks.mjs, htm.mjs (vendored, kein CDN zur Laufzeit).
+      index.html     SPA-Shell (Import-Map, styles.css, main.mjs).
+      styles.css     Design-Tokens + Komponenten-CSS + @font-face (selbst gehostet).
+      vendor/        preact.mjs, hooks.mjs, htm.mjs + fonts/ (Inter, Plus Jakarta
+                     Sans als Variable-woff2). Alles vendored, kein CDN zur Laufzeit.
       src/
         main.mjs     App-Wurzel: lädt /api/bootstrap, Routing kiosk/admin, Toast.
         api.mjs      fetch-Wrapper (apiGet/apiPost/... ) inkl. X-CSRFToken-Header.

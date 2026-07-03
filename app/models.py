@@ -145,54 +145,6 @@ class Visitor(db.Model):
         arrival_berlin = self.arrival_time.astimezone(BERLIN_TZ) if self.arrival_time.tzinfo else self.arrival_time
         return arrival_berlin.date() < now_berlin.date()
 
-    @property
-    def has_positive_answer(self) -> bool:
-        """True if any health question was answered with Yes."""
-        # Check new dynamic answers first
-        if self.health_answers:
-            return any(a.answer for a in self.health_answers)
-        # Fallback to legacy columns
-        legacy = [self.q1_flu, self.q2_diarrhea, self.q3_food_poisoning,
-                  self.q4_parasites, self.q5_ent, self.q6_skin]
-        return any(v is True for v in legacy)
-
-    @property
-    def has_any_answers(self) -> bool:
-        """True if visitor has any health questionnaire answers."""
-        if self.health_answers:
-            return True
-        legacy = [self.q1_flu, self.q2_diarrhea, self.q3_food_poisoning,
-                  self.q4_parasites, self.q5_ent, self.q6_skin]
-        return any(v is not None for v in legacy)
-
-    def get_answers_display(self) -> list[dict]:
-        """Return list of {question_de, question_en, question_fr, question_es, answer} for display."""
-        if self.health_answers:
-            return [
-                {
-                    "text_de": a.question.text_de,
-                    "text_en": a.question.text_en,
-                    "text_fr": a.question.text_fr,
-                    "text_es": a.question.text_es,
-                    "answer": a.answer,
-                }
-                for a in sorted(self.health_answers, key=lambda a: a.question.position)
-            ]
-        # Legacy fallback
-        legacy_qs = [
-            ("Erkältungskrankheiten", "Flu diseases", self.q1_flu),
-            ("Durchfall / Erbrechen", "Diarrhoea / vomiting", self.q2_diarrhea),
-            ("Lebensmittelvergiftung", "Food poisoning", self.q3_food_poisoning),
-            ("Parasitäre Infektionen", "Parasitic infections", self.q4_parasites),
-            ("HNO-Infektionen", "ENT infections", self.q5_ent),
-            ("Hauterkrankungen / Wunden", "Skin diseases / wounds", self.q6_skin),
-        ]
-        return [
-            {"text_de": de, "text_en": en, "answer": val}
-            for de, en, val in legacy_qs
-            if val is not None
-        ]
-
     def get_answers_for_csv(self) -> dict[str, str]:
         """Return {short_key: 'Ja'/'Nein'/''} for CSV export."""
         if self.health_answers:

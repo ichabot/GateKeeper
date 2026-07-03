@@ -47,7 +47,6 @@ export function Kiosk({ ctx, initialPin }) {
   const [tried, setTried] = useState(false);
   const [hasSig, setHasSig] = useState(false);
   const [pin, setPin] = useState('');
-  const [qr, setQr] = useState('');
   const [greet, setGreet] = useState('');
   const [autoSec, setAutoSec] = useState(0);
   const [coCode, setCoCode] = useState(initialPin || '');
@@ -81,7 +80,7 @@ export function Kiosk({ ctx, initialPin }) {
     setForm({ first: '', last: '', company: '', host: '', plate: '' });
     setAnswers({});
     setConsent({ ds: false, hy: false, sf: false });
-    setTried(false); setHasSig(false); setPin(''); setQr(''); setGreet('');
+    setTried(false); setHasSig(false); setPin(''); setGreet('');
     setCoCode(''); setCoError(false); setCoScan(false); setCoMinutes(0);
     setReturning(false); setProfileToken(''); setCreatePass(false);
     setRetCode(''); setRetErr(false); setPassQr(''); setPassToken('');
@@ -189,7 +188,7 @@ export function Kiosk({ ctx, initialPin }) {
         save_profile: createPass && !returning,
         profile_token: returning ? profileToken : undefined,
       });
-      setPin(res.pin); setQr(res.qr_svg || ''); setGreet(form.first.trim());
+      setPin(res.pin); setGreet(form.first.trim());
       setPassQr(res.pass_qr || ''); setPassToken(res.pass_token || '');
       // More time to scan when a visitor pass QR is shown (60 s), less without (30 s).
       setScreen('done'); startAuto(res.pass_qr ? 60 : 30);

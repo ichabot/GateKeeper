@@ -9,3 +9,5 @@
 *.gif binary
 *.exe binary
 *.db binary
+*.woff binary
+*.woff2 binary
