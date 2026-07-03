@@ -541,7 +541,7 @@ export function Kiosk({ ctx, initialPin }) {
 
   return html`<div class=${'gk-kiosk' + (dark ? ' gk-kiosk--dark' : '')} style=${rootStyle}>
     ${Header}
-    ${body}
+    <div class="gk-screen" key=${screen}>${body}</div>
     <${Modal} open=${!!modalCat} onClose=${() => setInfoModal(null)}
       title=${modalCat ? pick(modalCat.title, lang) : ''} closeLabel=${t.closeBtn}
       icon=${modalCat ? html`<${Icon} name=${modalCat.icon} size=${22} color=${modalCat.accent} />` : null}>

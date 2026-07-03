@@ -42,7 +42,7 @@ function LoginView({ ctx, onLogin }) {
   }
 
   return html`<div class="gk-login">
-    <form class="gk-login__card" onSubmit=${submit}>
+    <form class="gk-login__card gk-anim-in" onSubmit=${submit}>
       <div class="gk-login__badge"><${Icon} name="badge" size=${15} color="var(--accent)" /> ${t.adminBadge}</div>
       <h2 style=${{ fontSize: '22px', margin: '0 0 20px' }}>${t.loginTitle}</h2>
       <label class="gk-field" style=${{ marginBottom: '14px' }}>
@@ -151,7 +151,7 @@ export function Admin({ ctx }) {
               <div class="gk-kpi__value">${k.value}</div>
             </div>`)}
           </div>
-          <${TabComp} hub=${hub} stats=${stats} />
+          <div class="gk-anim-in" key=${tab}><${TabComp} hub=${hub} stats=${stats} /></div>
         </div>
       </main>
     </div>
