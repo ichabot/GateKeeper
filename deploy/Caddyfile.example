@@ -1,0 +1,24 @@
+# Example reverse proxy for GateKeeper (Caddy).
+# Caddy is NOT installed by deploy/setup.sh — set up your proxy of choice
+# yourself. This example gives you automatic HTTPS (Let's Encrypt) and
+# forwards to the gunicorn service on 127.0.0.1:8001.
+#
+# Install:  copy the block into /etc/caddy/Caddyfile, replace the domain,
+#           then: sudo systemctl reload caddy
+#
+# After enabling HTTPS, set SESSION_COOKIE_SECURE=1 in /opt/gatekeeper/.env
+# and run: sudo systemctl restart gatekeeper
+#
+# (nginx/Apache work equally well — just proxy_pass to 127.0.0.1:8001 and
+#  forward the X-Forwarded-For / X-Forwarded-Proto headers.)
+
+gatekeeper.example.com {
+    encode zstd gzip
+
+    # Body limit covers the signature PNG (~500 KB) + logo upload (~2 MB).
+    request_body {
+        max_size 8MB
+    }
+
+    reverse_proxy 127.0.0.1:8001
+}

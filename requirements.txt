@@ -7,3 +7,6 @@ Flask-WTF>=1.2
 python-dotenv>=1.0
 gunicorn>=21.0
 Werkzeug>=3.0
+reportlab>=4.0
+qrcode>=7.4
+Pillow>=10.0

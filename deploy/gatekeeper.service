@@ -1,0 +1,20 @@
+# GateKeeper systemd unit (gunicorn)
+# Installed automatically by deploy/setup.sh. Kept here for reference.
+# Copy to /etc/systemd/system/gatekeeper.service, then:
+#   sudo systemctl daemon-reload && sudo systemctl enable --now gatekeeper
+
+[Unit]
+Description=GateKeeper visitor management (gunicorn)
+After=network.target
+
+[Service]
+User=gatekeeper
+Group=gatekeeper
+WorkingDirectory=/opt/gatekeeper
+EnvironmentFile=/opt/gatekeeper/.env
+ExecStart=/opt/gatekeeper/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8001 --timeout 60 wsgi:application
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

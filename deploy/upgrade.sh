@@ -62,11 +62,11 @@ sudo -u "$APP_USER" bash -c "
 "
 echo "  Dependencies updated."
 
-# 3. Restart Apache
+# 3. Restart the gunicorn service
 echo ""
-echo "[3/3] Restarting Apache..."
-systemctl restart apache2
-echo "  Apache restarted."
+echo "[3/3] Restarting GateKeeper service..."
+systemctl restart gatekeeper
+echo "  Service restarted."
 
 # Done
 echo ""

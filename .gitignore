@@ -30,5 +30,8 @@ instance/
 .DS_Store
 Thumbs.db
 
+# Interne Design-/Referenzdateien (nicht ins Repo)
+INFOS-NICHT-UPLOADEN/
+
 # Migrations (if using Flask-Migrate locally)
 migrations/

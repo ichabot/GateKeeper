@@ -1,6 +1,8 @@
 """SQLAlchemy database models for GateKeeper."""
 
+import json
 import random
+import secrets
 from datetime import datetime, timezone
 
 from flask_login import UserMixin
@@ -22,6 +24,9 @@ class HealthQuestion(db.Model):
     text_es = db.Column(db.Text, nullable=False, default="")
     short_key = db.Column(db.String(50), nullable=False, unique=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
+    # Expected ("correct") answer. False = "No" is correct (default).
+    # Check-in is blocked when a visitor's answer differs from this value.
+    correct_answer = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,
@@ -29,6 +34,29 @@ class HealthQuestion(db.Model):
     )
 
     answers = db.relationship("VisitorAnswer", back_populates="question", lazy="dynamic")
+
+    def text_for(self, lang: str) -> str:
+        """Return the question text for a language with fallback to EN then DE."""
+        for try_lang in (lang, "en", "de"):
+            val = getattr(self, f"text_{try_lang}", None)
+            if val:
+                return val
+        return ""
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "position": self.position,
+            "short_key": self.short_key,
+            "active": self.active,
+            "correct_answer": self.correct_answer,
+            "text": {
+                "de": self.text_de,
+                "en": self.text_en,
+                "fr": self.text_fr,
+                "es": self.text_es,
+            },
+        }
 
     def __repr__(self) -> str:
         return f"<HealthQuestion {self.position}: {self.short_key}>"
@@ -72,6 +100,14 @@ class Visitor(db.Model):
     dsgvo_consent = db.Column(db.Boolean, nullable=False, default=False)
     hygiene_consent = db.Column(db.Boolean, nullable=False, default=False)
     safety_consent = db.Column(db.Boolean, nullable=False, default=False)
+
+    # Token of the returning-visitor pass ("Besucherausweis") used/created at
+    # check-in, if any — lets the visitor also check out by scanning their pass.
+    profile_token = db.Column(db.String(24), nullable=True, index=True)
+
+    # Set True by the nightly `auto-checkout` job when a visitor never checked
+    # out themselves — surfaced in the admin views as "Nicht ausgecheckt".
+    auto_checked_out = db.Column(db.Boolean, nullable=False, default=False)
 
     # Legacy columns kept for backward compatibility with old data.
     # New visitors use the VisitorAnswer table instead.
@@ -203,6 +239,64 @@ class Visitor(db.Model):
         return f"<Visitor {self.first_name} {self.last_name} ({self.company})>"
 
 
+class VisitorProfile(db.Model):
+    """Opt-in returning-visitor profile ("Besucherausweis").
+
+    Stores only the reusable master data (never health answers) so a returning
+    visitor can be pre-filled by scanning a QR that encodes the token. The
+    token is the credential printed in the QR; it is looked up offline by the
+    kiosk (the visitor's phone needs no network).
+    """
+
+    __tablename__ = "visitor_profiles"
+
+    # Unambiguous alphabet (no 0/O/1/I) for tokens that may be typed by hand.
+    _ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+
+    id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(24), unique=True, nullable=False)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    company = db.Column(db.String(200), nullable=False)
+    contact_person = db.Column(db.String(200), nullable=False, default="")
+    license_plate = db.Column(db.String(20), nullable=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+    last_seen_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    @classmethod
+    def generate_token(cls) -> str:
+        for _ in range(50):
+            tok = "".join(secrets.choice(cls._ALPHABET) for _ in range(10))
+            if not cls.query.filter_by(token=tok).first():
+                return tok
+        raise RuntimeError("Unable to generate unique profile token")
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "token": self.token,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "name": f"{self.first_name} {self.last_name}".strip(),
+            "company": self.company,
+            "host": self.contact_person or "",
+            "plate": self.license_plate or "",
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "last_seen_at": self.last_seen_at.isoformat() if self.last_seen_at else None,
+        }
+
+    def __repr__(self) -> str:
+        return f"<VisitorProfile {self.token} {self.first_name} {self.last_name}>"
+
+
 class AdminUser(db.Model, UserMixin):
     __tablename__ = "admin_users"
 
@@ -250,6 +344,13 @@ class SmtpSettings(db.Model):
 
 
 class StaticPage(db.Model):
+    """DEPRECATED — kept for backward compatibility / migration source.
+
+    Info content now lives in :class:`InfoCategory`. This table is no longer
+    read by the running app; it is retained so a redesign migration can pull
+    admin-edited content out of it and so no data is dropped.
+    """
+
     __tablename__ = "static_pages"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -267,3 +368,126 @@ class StaticPage(db.Model):
         nullable=False,
         default=lambda: datetime.now(timezone.utc),
     )
+
+
+class AppSettings(db.Model):
+    """Single-row table (id=1) for branding, kiosk config and retention."""
+
+    __tablename__ = "app_settings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    company_name = db.Column(db.String(200), nullable=False, default="GateKeeper")
+    logo_path = db.Column(db.String(255), nullable=True)  # relative to UPLOAD_FOLDER
+    accent = db.Column(db.String(20), nullable=False, default="blau")
+    retention_days = db.Column(db.Integer, nullable=False, default=90)
+    # Kiosk configuration (formerly hard-coded artifact props)
+    kiosk_backdrop = db.Column(db.String(20), nullable=False, default="hell")  # hell/anthrazit/schlicht
+    collect_plate = db.Column(db.Boolean, nullable=False, default=True)
+    auto_return_seconds = db.Column(db.Integer, nullable=False, default=20)
+    # Questionnaire intro text per language
+    health_intro_de = db.Column(db.Text, nullable=False, default="")
+    health_intro_en = db.Column(db.Text, nullable=False, default="")
+    health_intro_fr = db.Column(db.Text, nullable=False, default="")
+    health_intro_es = db.Column(db.Text, nullable=False, default="")
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    def health_intro_for(self, lang: str) -> str:
+        for try_lang in (lang, "en", "de"):
+            val = getattr(self, f"health_intro_{try_lang}", None)
+            if val:
+                return val
+        return ""
+
+
+class AuditLog(db.Model):
+    """Append-only audit trail of admin-relevant actions."""
+
+    __tablename__ = "audit_log"
+
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+    action = db.Column(db.String(50), nullable=False)  # code, see app.audit.ACTIONS
+    detail = db.Column(db.String(255), nullable=True)
+    user = db.Column(db.String(80), nullable=True)
+    ip = db.Column(db.String(64), nullable=True)
+
+    def __repr__(self) -> str:
+        return f"<AuditLog {self.action} {self.created_at:%Y-%m-%d %H:%M}>"
+
+
+class InfoCategory(db.Model):
+    """Kiosk information content — either a directory (dir) or an article (art)."""
+
+    __tablename__ = "info_categories"
+
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(40), unique=True, nullable=False)
+    type = db.Column(db.String(8), nullable=False, default="art")  # 'dir' | 'art'
+    icon = db.Column(db.String(20), nullable=False, default="info")
+    accent = db.Column(db.String(20), nullable=False, default="#2f6fed")
+    position = db.Column(db.Integer, nullable=False, default=0)
+    active = db.Column(db.Boolean, nullable=False, default=True)
+
+    title_de = db.Column(db.String(200), nullable=False, default="")
+    title_en = db.Column(db.String(200), nullable=False, default="")
+    title_fr = db.Column(db.String(200), nullable=False, default="")
+    title_es = db.Column(db.String(200), nullable=False, default="")
+
+    # Article body (Markdown) per language — used when type == 'art'
+    body_de = db.Column(db.Text, nullable=False, default="")
+    body_en = db.Column(db.Text, nullable=False, default="")
+    body_fr = db.Column(db.Text, nullable=False, default="")
+    body_es = db.Column(db.Text, nullable=False, default="")
+
+    # Directory entries as JSON — used when type == 'dir'
+    # [{"label": {"de","en","fr","es"}, "value": "..."}]
+    entries_json = db.Column(db.Text, nullable=False, default="[]")
+
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    @property
+    def entries(self) -> list:
+        try:
+            data = json.loads(self.entries_json or "[]")
+            return data if isinstance(data, list) else []
+        except (ValueError, TypeError):
+            return []
+
+    @entries.setter
+    def entries(self, value: list) -> None:
+        self.entries_json = json.dumps(value or [], ensure_ascii=False)
+
+    def to_dict(self) -> dict:
+        return {
+            "key": self.key,
+            "type": self.type,
+            "icon": self.icon,
+            "accent": self.accent,
+            "position": self.position,
+            "active": self.active,
+            "title": {
+                "de": self.title_de,
+                "en": self.title_en,
+                "fr": self.title_fr,
+                "es": self.title_es,
+            },
+            "body": {
+                "de": self.body_de,
+                "en": self.body_en,
+                "fr": self.body_fr,
+                "es": self.body_es,
+            },
+            "entries": self.entries,
+        }

@@ -1,9 +1,12 @@
 # 🏢 GateKeeper
 
-**Modern, iPad-optimized visitor management system for company entrances. Visitors check themselves in and out, while a password-protected admin area provides full oversight.**
+**Modern, iPad-optimized visitor management for company entrances.** Visitors check
+themselves in and out on a kiosk; a password-protected admin area gives staff full
+oversight, reporting, and GDPR tooling.
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
 ![Flask](https://img.shields.io/badge/Flask-3.x-green)
+![Frontend](https://img.shields.io/badge/Frontend-Preact%20%2B%20htm%20(no%20build)-8b5cf6)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ---
@@ -18,35 +21,24 @@
 
 ## ✨ Features
 
-- **Self-service check-in** — Name, company, contact person, license plate, digital signature, GDPR consent
-- **Health questionnaire** — Dynamic yes/no questions, configurable in admin area
-- **4-digit PIN checkout** — Generated at check-in, touch-optimized numpad
-- **Digital signature** — Canvas with finger / Apple Pencil support
-- **Multi-language** — German, English, French, Spanish (switchable with one click)
-- **Side menu** — Emergency contacts, plans, numbers, visitor info, hygiene rules, safety instructions
-- **Admin dashboard** (password-protected):
-  - Visitor list with filters (date, status, text search)
-  - Signature and questionnaire answer display
-  - CSV export (with dynamic questionnaire columns)
-  - Edit static pages (emergency info, hygiene rules, safety instructions)
-  - SMTP settings for automatic monthly visitor reports
-  - Health question management (add/edit/delete, all 4 languages)
-- **Monthly email report** — Visitor CSV via cron or manual trigger
-- **Emergency evacuation list** — Instant email to emergency contacts
-- **Nightly auto-checkout** — Visitors who forgot to check out are auto-closed at midnight
-- **GDPR compliant** — Consent checkbox, automatic data cleanup (configurable retention period)
-- **iPad kiosk optimized** — Meta tags, touch-friendly UI, auto-redirect after actions
+### Kiosk (visitor self-service)
+- **Guided check-in** — name, company, host, optional license plate, digital signature, GDPR consent.
+- **Health questionnaire** — admin-configurable yes/no questions. Each question has an expected answer; a deviation blocks check-in.
+- **PIN check-out** — a short PIN is issued at check-in; visitors check out on a touch numpad.
+- **Returning-visitor pass ("Besucherausweis")** — opt-in. Stores only master data (never health answers) behind a QR token. On the next visit the kiosk scans it to pre-fill the form, and the visitor can **check out by scanning the pass** instead of typing the PIN.
+- **Multi-language** — German, English, French, Spanish, switchable with one tap.
+- **Info hub** — emergency contacts, directions, hygiene & safety pages, all editable in the admin area.
+- **iPad-friendly** — screen Wake Lock keeps the display on, auto-return to the start screen after each action, camera QR scanning (over HTTPS) with a keyboard-wedge / manual fallback.
 
----
-
-## ⚠️ Disclaimer
-
-This project was developed with AI assistance and uses third-party open-source dependencies that have **not been independently audited**. The software is provided "as is" under the MIT License, without warranty of any kind.
-
-- This is a personal/hobby project, not a certified visitor management system
-- Health questionnaire and safety instructions are **examples** — adapt to your regulations
-- Digital signatures are stored as Base64 PNG — not legally equivalent to qualified electronic signatures
-- Always test thoroughly before deploying in a production environment
+### Admin (password-protected)
+- **Live view** — who is currently on site, with one-click check-out.
+- **History** — filter by date range and free text; status column flags visitors the nightly job auto-closed as **"Not checked out"**.
+- **Statistics** & **audit log** of admin-relevant actions.
+- **Content editor** — info categories/pages and the health questionnaire, all four languages.
+- **Settings** — SMTP/mail, branding (logo + accent colour), kiosk options, **admin accounts** (create / delete / reset password), and **GDPR** tools (unified search & delete of visits and passes, retention period).
+- **Exports** — CSV (with per-question columns) and branded PDF history report.
+- **Email** — instant emergency evacuation list and an automated monthly visitor report.
+- **Automation** — nightly auto-checkout of forgotten visitors and automatic data cleanup after the configured retention period.
 
 ---
 
@@ -54,23 +46,26 @@ This project was developed with AI assistance and uses third-party open-source d
 
 | Component | Technology |
 |-----------|------------|
-| Backend | Python 3.11+ / Flask 3.x |
-| Database | SQLite (file-based, no server needed) |
-| ORM | SQLAlchemy + Flask-Migrate |
-| Frontend | Pico CSS v2 + Vanilla JS |
-| Auth | Flask-Login + Werkzeug Password Hashing |
-| i18n | DE / EN / FR / ES (session-based, no gettext) |
-| Deployment | Apache + mod_wsgi (Ubuntu/Debian) |
+| Backend | Python 3.11+ · Flask 3.x · Flask-SQLAlchemy · Flask-Login · Flask-WTF (CSRF) |
+| Database | SQLite (file-based, no DB server) — schema changes applied automatically on startup |
+| Frontend | **Preact + htm + native ES modules — no Node/Vite build step.** Libraries are vendored under `app/static/spa/vendor/` and resolved via an import map. |
+| PDF / QR | reportlab · qrcode |
+| App server | gunicorn behind a systemd service |
+| TLS / exposure | your own reverse proxy (Caddy, nginx, Apache) — not installed by the setup script |
+
+There is **no build pipeline**: the frontend ships as plain `.mjs`/`.css` files served
+directly by Flask. Editing a frontend file and reloading the browser is all it takes.
 
 ---
 
 ## 🚀 Installation
 
-> **Supported:** Ubuntu 22.04+ / Debian 12+. Windows is not supported.
+> **Supported:** Ubuntu 22.04+ / Debian 12+.
 
-### Production Deployment (recommended)
+### Production
 
-One command installs everything — system packages, Apache, Python dependencies, database, cron jobs:
+`deploy/setup.sh` installs system packages, a Python venv, the database, cron jobs, and a
+**gunicorn systemd service** listening on `127.0.0.1:8001`:
 
 ```bash
 sudo apt update && sudo apt install -y git
@@ -78,86 +73,70 @@ git clone https://github.com/ichabot/GateKeeper.git /opt/gatekeeper
 sudo bash /opt/gatekeeper/deploy/setup.sh
 ```
 
-The app is then available at **http://your-server-ip** (port 80).
+Then put a **reverse proxy** in front of `127.0.0.1:8001` to add HTTPS. An example Caddy
+config is in [`deploy/Caddyfile.example`](deploy/Caddyfile.example) (nginx/Apache work too —
+just `proxy_pass` to the same address). After enabling HTTPS, set `SESSION_COOKIE_SECURE=1`
+in `/opt/gatekeeper/.env` and `sudo systemctl restart gatekeeper`.
 
-Alternatively, run the setup script directly:
-
-```bash
-curl -sL https://raw.githubusercontent.com/ichabot/GateKeeper/main/deploy/setup.sh | sudo bash
+```
+Manage:  sudo systemctl {status|restart} gatekeeper
+Logs:    sudo journalctl -u gatekeeper -f
 ```
 
-### Development (local testing)
+### Development
 
 ```bash
 sudo apt install -y python3 python3-venv python3-pip git
-
-git clone https://github.com/ichabot/GateKeeper.git
-cd GateKeeper
-python3 -m venv venv
-source venv/bin/activate
+git clone https://github.com/ichabot/GateKeeper.git && cd GateKeeper
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
 flask run
 ```
 
-Dev server at **http://localhost:5000**.
+Dev server at **http://localhost:5000** (the SQLite DB is created automatically on startup).
 
-### Default Admin Access
+### Default admin
+
+Open the app and tap the **shield icon** (top-right) to sign in.
 
 | | |
 |---|---|
-| URL | `http://your-server-ip/admin/login` |
 | Username | `admin` |
 | Password | `admin` |
 
-**Change the password immediately:**
+Change it immediately:
 
 ```bash
 cd /opt/gatekeeper && source venv/bin/activate
-flask seed-admin --username admin --password <new-password>
+flask seed-admin            # interactive / resets the admin password
 ```
+
+…or create additional accounts in **Admin → Settings → Users**.
 
 ---
 
 ## 🔄 Upgrade
 
-To update an existing installation to the latest version:
-
 ```bash
 sudo bash /opt/gatekeeper/deploy/upgrade.sh
 ```
 
-This pulls the latest code, updates dependencies, and restarts Apache. Your **database, `.env` configuration, and logo are preserved**.
+Pulls the latest code, updates dependencies, and restarts the service. Your **database,
+`.env`, and uploaded logo are preserved**.
 
-### Database Migrations
+**Database migrations are automatic.** On startup the app factory runs `db.create_all()`
+for new tables and idempotent `ALTER TABLE` steps for new columns, then backfills missing
+seed data. No manual migration commands are needed.
 
-GateKeeper uses SQLite and handles schema changes **automatically on startup**:
-
-- New columns (e.g. French/Spanish translations) are added via `ALTER TABLE` on first request after upgrade
-- Default seed data (health questions, static pages) is backfilled with missing translations
-- No manual migration commands needed — just upgrade and restart
-
-### Manual Upgrade
+Manual equivalent:
 
 ```bash
 cd /opt/gatekeeper
 sudo -u gatekeeper git pull origin main
 sudo -u gatekeeper bash -c "source venv/bin/activate && pip install -r requirements.txt"
-sudo systemctl restart apache2
+sudo systemctl restart gatekeeper
 ```
-
-### Upgrading from v1.0.0 to v1.1.0
-
-The v1.1.0 release adds French/Spanish support and several bugfixes. After upgrading:
-
-1. **Database schema** — New columns (`text_fr`, `text_es`, `title_fr`, `title_es`, `content_fr`, `content_es`) are added automatically on first request
-2. **Seed data** — French/Spanish translations for default health questions and static pages are backfilled automatically
-3. **Cron jobs** — A new `auto-checkout` command was added. Update your cron file:
-   ```bash
-   # Add to /etc/cron.d/gatekeeper:
-   5 0 * * * gatekeeper cd /opt/gatekeeper && venv/bin/flask auto-checkout
-   ```
-4. **No data loss** — All existing visitor records, admin settings, and custom page content are preserved
 
 ---
 
@@ -165,11 +144,46 @@ The v1.1.0 release adds French/Spanish support and several bugfixes. After upgra
 
 | Command | Description |
 |---------|-------------|
-| `flask run` | Start development server |
-| `flask seed-admin` | Create/reset admin user password |
-| `flask cleanup-visitors --days 90` | Delete old visitor data (GDPR) |
-| `flask send-monthly-report` | Send previous month's report by email |
-| `flask auto-checkout` | Auto-checkout visitors from previous days |
+| `flask run` | Start the development server |
+| `flask seed-admin` | Create / reset the admin account |
+| `flask cleanup-visitors [--days N]` | Delete visitor data older than N days (default: configured retention) — GDPR |
+| `flask send-monthly-report` | Email the previous month's visitor CSV |
+| `flask auto-checkout` | Auto-close visitors who forgot to check out (stamps 23:59:59 of the arrival day and flags them "not checked out") |
+
+### Cron jobs
+
+`deploy/setup.sh` installs these in `/etc/cron.d/gatekeeper`:
+
+```cron
+0 2 * * *  gatekeeper  cd /opt/gatekeeper && venv/bin/flask cleanup-visitors      # DSGVO cleanup, daily 02:00
+0 7 1 * *  gatekeeper  cd /opt/gatekeeper && venv/bin/flask send-monthly-report   # monthly report, 1st @ 07:00
+5 0 * * *  gatekeeper  cd /opt/gatekeeper && venv/bin/flask auto-checkout         # auto-checkout, daily 00:05
+```
+
+---
+
+## 🔀 API (JSON)
+
+Same-origin JSON API consumed by the SPA. Public endpoints are CSRF-exempt and
+rate-limited; admin mutations require a `X-CSRFToken` header (fetched from `GET /api/csrf`).
+
+**Public**
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /api/bootstrap` | Settings, health questions, info content |
+| `POST /api/checkin` | Check in (accepts `save_profile`, `profile_token`; returns PIN + optional pass) |
+| `POST /api/checkout` | Check out by **PIN or visitor-pass token** (`GKP:…`) |
+| `POST /api/profile/lookup` | Resolve a pass token → master data for pre-fill |
+
+**Admin** (login required)
+
+`login/logout/session` · `visitors?scope=live|history&from&to&q` · `visitors/<id>/checkout` ·
+`visitors/<id>` (DELETE) · `export/csv|pdf` · `stats` · `audit` · `info` · `health` ·
+`settings` (+ `settings/logo`) · `users` (CRUD + password reset) · `profiles` (GDPR) ·
+`emergency` · `smtp/test` · `content/export|import`.
+
+Non-`/api` paths serve the SPA shell; `/uploads/<file>` serves the logo.
 
 ---
 
@@ -178,133 +192,63 @@ The v1.1.0 release adds French/Spanish support and several bugfixes. After upgra
 ```
 GateKeeper/
 ├── app/
-│   ├── __init__.py              # App Factory, CLI Commands, Seed Data, DB Migrations
-│   ├── extensions.py            # Flask Extensions (DB, Login, Babel, CSRF)
-│   ├── models.py                # Data Models (Visitor, AdminUser, StaticPage, SmtpSettings, HealthQuestion)
-│   ├── mail.py                  # Email Sending (SMTP, monthly CSV report, emergency list)
-│   ├── translations.py          # UI string translations (DE/EN/FR/ES)
-│   ├── visitor/                 # Blueprint: Visitor Pages
-│   │   ├── routes.py            #   Check-in, Check-out, Info Pages, Language Switch
-│   │   └── forms.py             #   WTForms (CheckIn, CheckOut)
-│   ├── admin/                   # Blueprint: Admin Area
-│   │   ├── routes.py            #   Login, Dashboard, Export, Pages, SMTP, Questions
-│   │   └── forms.py             #   WTForms (Login, Filter, EditPage, SmtpSettings, HealthQuestion)
-│   ├── templates/               # Jinja2 Templates
-│   │   ├── base.html            #   Master Layout (Header, Sidebar, Footer, Lang Switcher)
-│   │   ├── visitor/             #   Home, Checkin, Checkout, Info, Success
-│   │   └── admin/               #   Login, Dashboard, Pages, Questions, SMTP
-│   └── static/
-│       ├── css/style.css        #   Custom Styles (Pico CSS base)
-│       ├── js/app.js            #   PIN Numpad, Signature Pad, Auto-Timeout
-│       └── img/logo.png         #   Company Logo (replace with yours)
+│   ├── __init__.py          # App factory: DB init, idempotent migrations, seeds, SPA serving, CLI
+│   ├── extensions.py        # db, login_manager, csrf
+│   ├── models.py            # SQLAlchemy models
+│   ├── seed_content.py      # Default info categories, health questions, branding
+│   ├── audit.py             # log_audit() → AuditLog
+│   ├── mail.py              # SMTP: emergency list + monthly CSV report
+│   ├── pdf.py               # Branded visitor PDF (reportlab)
+│   ├── qr.py                # Scannable QR SVG
+│   ├── content_io.py        # Editorial content export/import (JSON)
+│   ├── api/                 # public.py (kiosk) + admin/ (authenticated) blueprints
+│   └── static/spa/          # Preact+htm SPA — index.html, styles.css, vendor/, src/
+│       └── src/             #   main, api, i18n, theme, ui, kiosk/, admin/…
 ├── deploy/
-│   ├── setup.sh                 # Production Deployment Script
-│   ├── upgrade.sh               # Upgrade Existing Installation
-│   └── gatekeeper.conf          # Apache VHost Configuration (reference)
-├── database/
-│   └── schema.sql               # SQL Schema Reference (documentation only)
-├── config.py                    # Flask Config (Development / Production)
-├── wsgi.py                      # WSGI Entry Point
-├── requirements.txt             # Python Dependencies
-└── .env.example                 # Environment Variables Template
+│   ├── setup.sh             # Production install (gunicorn + systemd)
+│   ├── upgrade.sh           # Update an existing install
+│   ├── gatekeeper.service   # systemd unit (reference)
+│   └── Caddyfile.example    # Reverse-proxy example (not auto-installed)
+├── database/schema.sql      # SQL schema reference (documentation only)
+├── config.py                # Dev/Prod config
+├── wsgi.py                  # WSGI entry point (application = create_app())
+├── requirements.txt
+└── .env.example
 ```
-
----
-
-## 🔀 Routes
-
-### Visitor (public)
-
-| Route | Description |
-|-------|-------------|
-| `GET /` | Welcome page (Check-in / Check-out) |
-| `GET/POST /checkin` | Check-in form |
-| `GET /checkin/success/<pin>` | PIN display after check-in |
-| `GET/POST /checkout` | Check-out via PIN numpad |
-| `GET /checkout/success` | Farewell page |
-| `GET /info/<slug>` | Static info pages |
-| `GET /lang/<code>` | Switch language (de/en/fr/es) |
-
-### Admin (password-protected)
-
-| Route | Description |
-|-------|-------------|
-| `GET/POST /admin/login` | Admin login |
-| `GET /admin/logout` | Logout |
-| `GET /admin/dashboard` | Visitor dashboard with filters |
-| `GET /admin/export` | CSV export (filtered) |
-| `GET /admin/pages` | Manage static pages |
-| `GET/POST /admin/pages/<slug>` | Edit page content (DE/EN/FR/ES, HTML) |
-| `GET /admin/questions` | Health question management |
-| `GET/POST /admin/questions/new` | Create new question |
-| `GET/POST /admin/questions/<id>` | Edit question |
-| `GET/POST /admin/smtp` | SMTP / email settings |
-| `POST /admin/smtp/test` | Send test email |
-| `POST /admin/smtp/send-report` | Send previous month's report |
-| `POST /admin/emergency-send` | Send emergency evacuation list |
 
 ---
 
 ## 📱 iPad Kiosk Setup
 
-1. Open Safari and navigate to the GateKeeper URL
-2. **Add to Home Screen** (for fullscreen webapp)
-3. Enable **Guided Access**:
-   - Settings → Accessibility → Guided Access
-   - Triple-press Home/Side button to activate
-   - Prevents visitors from leaving the app
-
----
-
-## 🎨 Customization
-
-### Company Logo
-
-Replace `app/static/img/logo.png` with your logo (max 160×40px, PNG, transparent background).
-
-### Static Pages
-
-All info page content (hygiene rules, safety instructions, emergency info) can be edited in the admin area under **Manage Pages** — no code changes needed. Each page supports DE/EN/FR/ES.
-
-### Health Questions
-
-Add, edit, reorder, or deactivate health questionnaire questions in the admin area. Each question supports all 4 languages.
+1. Serve GateKeeper over **HTTPS** (needed for the screen Wake Lock and camera QR scanning).
+2. Open the URL in Safari and **Add to Home Screen** for a fullscreen web app.
+3. Enable **Guided Access** (Settings → Accessibility → Guided Access; triple-press the
+   side button to lock the visitor into the app).
 
 ---
 
 ## 🔒 GDPR / Data Privacy
 
-- Visitors must consent to the privacy policy before check-in
-- Digital signature captured and stored (Base64 PNG)
-- Visitors cannot view other visitors' data
-- Automatic data cleanup via cron (see [Cron Jobs](#-cron-jobs) below)
+- Explicit consent is required before check-in; the signature is stored as a Base64 PNG.
+- The returning-visitor pass stores **master data only — never health answers**.
+- **Admin → Settings → Privacy**: one search finds and deletes both visit records and passes;
+  the retention period drives automatic nightly cleanup.
+- Editorial **export/import never includes** visitor data or the SMTP password.
 
 ---
 
-## 📧 Cron Jobs
+## ⚠️ Disclaimer
 
-The setup script installs these automatically in `/etc/cron.d/gatekeeper`:
+Developed with AI assistance; uses third-party open-source dependencies that have **not been
+independently audited**. Provided "as is" under the MIT License, without warranty.
 
-```bash
-# GDPR cleanup: delete records older than 90 days (daily 2:00 AM)
-0 2 * * * gatekeeper cd /opt/gatekeeper && venv/bin/flask cleanup-visitors --days 90
-
-# Auto-checkout: close missed visitors from previous days (daily 0:05 AM)
-5 0 * * * gatekeeper cd /opt/gatekeeper && venv/bin/flask auto-checkout
-
-# Monthly email report: 1st of month at 7:00 AM
-0 7 1 * * gatekeeper cd /opt/gatekeeper && venv/bin/flask send-monthly-report
-```
-
-### SMTP Setup
-
-1. Admin Dashboard → **Email / SMTP**
-2. Enter SMTP credentials
-3. **Send test email** to verify
-4. Enable **Monthly sending active**
+- Personal/hobby project, not a certified visitor-management system.
+- The sample health questions and safety texts are **examples** — adapt them to your regulations.
+- Digital signatures are stored as Base64 PNG and are **not** qualified electronic signatures.
+- Test thoroughly before production use.
 
 ---
 
 ## 📄 License
 
-MIT License — see [LICENSE](LICENSE)
+MIT License — see [LICENSE](LICENSE).
