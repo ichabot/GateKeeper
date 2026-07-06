@@ -53,6 +53,12 @@ class ProductionConfig(BaseConfig):
         "DATABASE_URL",
         "sqlite:///gatekeeper.db",
     )
+    # Secure by default in production: the admin session cookie is HTTPS-only
+    # unless SESSION_COOKIE_SECURE is explicitly set to a falsy value (e.g. "0"
+    # for temporary plain-HTTP testing before TLS is in front of the app).
+    SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "1").lower() in (
+        "1", "true", "yes",
+    )
 
     @classmethod
     def init_app(cls, app):
@@ -60,6 +66,13 @@ class ProductionConfig(BaseConfig):
             print("FATAL: SECRET_KEY not set. Refusing to start in production.", file=sys.stderr)
             print("Set SECRET_KEY in .env or as environment variable.", file=sys.stderr)
             sys.exit(1)
+        if not cls.SESSION_COOKIE_SECURE:
+            print(
+                "WARNING: SESSION_COOKIE_SECURE is off in production — the admin "
+                "session cookie will be sent over plain HTTP. Set it to 1 once TLS "
+                "is in front of the app.",
+                file=sys.stderr,
+            )
 
 
 config_map = {

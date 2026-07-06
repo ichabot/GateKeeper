@@ -96,18 +96,21 @@ SECRET_KEY=$(${PYTHON_BIN} -c "import secrets; print(secrets.token_hex(32))")
 ENV_FILE="${APP_DIR}/.env"
 
 if [ ! -f "$ENV_FILE" ]; then
+    ADMIN_PW=$(${PYTHON_BIN} -c "import secrets; print(secrets.token_urlsafe(12))")
     cat > "$ENV_FILE" <<ENVEOF
 FLASK_APP=wsgi.py
 GATEKEEPER_ENV=production
 SECRET_KEY=${SECRET_KEY}
-ADMIN_DEFAULT_PASSWORD=admin
+ADMIN_DEFAULT_PASSWORD=${ADMIN_PW}
 DATABASE_URL=sqlite:////opt/gatekeeper/instance/gatekeeper.db
-# Set to 1 once the app is served over HTTPS (also required for the iPad Wake Lock):
-SESSION_COOKIE_SECURE=0
+# Admin session cookie is HTTPS-only by default. Set to 0 ONLY for temporary
+# plain-HTTP testing before TLS is in front of the app (see Caddyfile.example).
+SESSION_COOKIE_SECURE=1
 ENVEOF
     chown "${APP_USER}:${APP_USER}" "$ENV_FILE"
     chmod 600 "$ENV_FILE"
-    echo "  .env created with a generated SECRET_KEY."
+    echo "  .env created with a generated SECRET_KEY and a random admin password."
+    NEW_ADMIN_PW="$ADMIN_PW"
 else
     echo "  .env already exists, keeping existing configuration."
 fi
@@ -184,10 +187,16 @@ echo "============================================"
 echo ""
 echo "  App (internal):  http://${BIND_ADDR}   (gunicorn)"
 echo "  Admin:           open the app, tap the shield icon (top-right) to sign in"
-echo "  Admin login:     admin / admin  --  CHANGE THIS"
+if [ -n "${NEW_ADMIN_PW:-}" ]; then
+    echo "  Admin login:     admin / ${NEW_ADMIN_PW}"
+    echo "                   (you'll be required to set your own password on first login)"
+else
+    echo "  Admin login:     see ADMIN_DEFAULT_PASSWORD in ${APP_DIR}/.env"
+fi
 echo ""
 echo "  NEXT: put a reverse proxy in front of ${BIND_ADDR} to add HTTPS."
-echo "        See deploy/Caddyfile.example. Then set SESSION_COOKIE_SECURE=1"
+echo "        See deploy/Caddyfile.example. The session cookie is HTTPS-only by"
+echo "        default; for temporary plain-HTTP testing set SESSION_COOKIE_SECURE=0"
 echo "        in ${APP_DIR}/.env and 'systemctl restart gatekeeper'."
 echo ""
 echo "  Manage:  systemctl {status|restart} gatekeeper"

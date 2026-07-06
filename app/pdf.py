@@ -3,6 +3,7 @@
 import io
 import os
 from datetime import datetime, timezone
+from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
@@ -65,9 +66,9 @@ def build_visitor_pdf(
     generated = to_berlin(datetime.now(timezone.utc)).strftime("%d.%m.%Y %H:%M")
     meta_lines = []
     if company_name:
-        meta_lines.append(f"<b>{company_name}</b>")
+        meta_lines.append(f"<b>{escape(company_name)}</b>")
     if period_label:
-        meta_lines.append(f"Zeitraum: {period_label}")
+        meta_lines.append(f"Zeitraum: {escape(period_label)}")
     meta_lines.append(f"Erstellt: {generated} Uhr · {len(visitors)} Einträge")
     meta_para = Paragraph("<br/>".join(meta_lines), meta_style)
 
@@ -95,13 +96,15 @@ def build_visitor_pdf(
     data = [[Paragraph(h, head_style) for h in headers]]
 
     for v in visitors:
+        # Paragraph parses XML-ish markup — escape visitor-supplied text, or a
+        # kiosk visitor named "<b" would crash every PDF export.
         name = f"{v.first_name} {v.last_name}".strip()
         status = "Anwesend" if v.is_on_site else "Ausgecheckt"
         row = [
-            Paragraph(name, cell_style),
-            Paragraph(v.company or "—", cell_style),
-            Paragraph(v.contact_person or "—", cell_style),
-            Paragraph(v.license_plate or "—", cell_style),
+            Paragraph(escape(name), cell_style),
+            Paragraph(escape(v.company or "—"), cell_style),
+            Paragraph(escape(v.contact_person or "—"), cell_style),
+            Paragraph(escape(v.license_plate or "—"), cell_style),
             Paragraph(_fmt(v.arrival_time, "%d.%m.%Y"), cell_style),
             Paragraph(_fmt(v.arrival_time, "%H:%M"), cell_style),
             Paragraph(_fmt(v.departure_time, "%H:%M"), cell_style),

@@ -1,5 +1,7 @@
 """Flask application factory for GateKeeper (React-SPA + JSON-API redesign)."""
 
+import base64
+import hashlib
 import mimetypes
 import os
 import re
@@ -8,7 +10,8 @@ from html import unescape
 from zoneinfo import ZoneInfo
 
 import click
-from flask import Flask, abort, jsonify, send_from_directory
+from flask import Flask, abort, jsonify, request, send_from_directory
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # ES modules must be served with a JavaScript MIME type or the browser refuses
 # to execute them. Register it so Flask's static handler (behind gunicorn)
@@ -29,6 +32,29 @@ def to_berlin(dt):
     return dt.astimezone(BERLIN_TZ)
 
 
+def client_ip() -> str:
+    """Real client IP for rate limiting and the audit trail.
+
+    With ProxyFix (one hop) installed in the app factory, ``request.remote_addr``
+    already resolves to the client address the trusted reverse proxy reported —
+    so we must NOT parse the raw, client-spoofable ``X-Forwarded-For`` ourselves.
+    """
+    return request.remote_addr or "?"
+
+
+def csv_safe(value) -> str:
+    """Neutralize CSV formula injection for spreadsheet exports.
+
+    Visitor-supplied cells starting with =, +, -, @ (or tab/CR) would be
+    executed as formulas by Excel/LibreOffice; prefix them with an apostrophe
+    so they are rendered as literal text.
+    """
+    s = "" if value is None else str(value)
+    if s and s[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + s
+    return s
+
+
 from config import config_map
 
 
@@ -44,6 +70,21 @@ def create_app(config_name: str | None = None) -> Flask:
 
     if hasattr(config_cls, "init_app"):
         config_cls.init_app(app)
+
+    # Trust exactly one reverse-proxy hop (the operator's own Caddy/nginx) for
+    # the client IP and scheme. Without this, request.remote_addr is the proxy
+    # and code would have to read the client-spoofable X-Forwarded-For itself.
+    # PROXY_HOPS overrides the hop count: 0 disables ProxyFix entirely (gunicorn
+    # exposed directly — otherwise a client could spoof X-Forwarded-For), 2+ for
+    # chained proxies (e.g. CDN in front of the local reverse proxy).
+    try:
+        proxy_hops = int(os.environ.get("PROXY_HOPS", "1"))
+    except ValueError:
+        proxy_hops = 1
+    if proxy_hops > 0:
+        app.wsgi_app = ProxyFix(
+            app.wsgi_app, x_for=proxy_hops, x_proto=proxy_hops, x_host=proxy_hops
+        )
 
     # --- Instance & uploads directories -----------------------------------
     os.makedirs(app.instance_path, exist_ok=True)
@@ -71,6 +112,9 @@ def create_app(config_name: str | None = None) -> Flask:
 
     # --- SPA + uploads serving --------------------------------------------
     _register_spa(app)
+
+    # --- Security response headers (CSP, anti-clickjacking, nosniff) -------
+    _register_security_headers(app)
 
     # --- CLI ---------------------------------------------------------------
     register_cli(app)
@@ -113,6 +157,63 @@ def _register_spa(app: Flask):
 
 
 # ---------------------------------------------------------------------------
+# Security response headers
+# ---------------------------------------------------------------------------
+def _importmap_hash(spa_dir: str) -> str | None:
+    """SHA-256 (base64) of the inline import-map script in index.html.
+
+    Computed from the served bytes so the CSP hash always matches what the
+    browser sees — no build step, no hash to maintain by hand. Returns None if
+    the block can't be found (caller then falls back to 'unsafe-inline').
+    """
+    try:
+        with open(os.path.join(spa_dir, "index.html"), "rb") as fh:
+            html_bytes = fh.read()
+    except OSError:
+        return None
+    start = html_bytes.find(b'<script type="importmap">')
+    if start == -1:
+        return None
+    start = html_bytes.find(b">", start) + 1
+    end = html_bytes.find(b"</script>", start)
+    if end == -1:
+        return None
+    digest = hashlib.sha256(html_bytes[start:end]).digest()
+    return base64.b64encode(digest).decode("ascii")
+
+
+def _register_security_headers(app: Flask):
+    spa_dir = os.path.join(app.static_folder, "spa")
+    h = _importmap_hash(spa_dir)
+    # The only inline script is the import map; pin it by hash so no other inline
+    # script can run. Fall back to 'unsafe-inline' only if it can't be hashed.
+    script_src = f"'self' 'sha256-{h}'" if h else "'self' 'unsafe-inline'"
+    csp = "; ".join([
+        "default-src 'self'",
+        f"script-src {script_src}",
+        # Inline styles: htm/theme apply per-element styles and CSS variables.
+        "style-src 'self' 'unsafe-inline'",
+        # data: for signature PNGs and inline QR/flag SVGs; blob: for camera video.
+        "img-src 'self' data:",
+        "media-src 'self' blob:",
+        "font-src 'self'",
+        "connect-src 'self'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+    ])
+
+    @app.after_request
+    def _set_security_headers(resp):
+        resp.headers.setdefault("Content-Security-Policy", csp)
+        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resp.headers.setdefault("X-Frame-Options", "DENY")
+        resp.headers.setdefault("Referrer-Policy", "same-origin")
+        return resp
+
+
+# ---------------------------------------------------------------------------
 # Migrations (idempotent, plain SQLite ALTERs for existing installs)
 # ---------------------------------------------------------------------------
 def _run_migrations(db):
@@ -149,6 +250,9 @@ def _run_migrations(db):
             stmts.append("ALTER TABLE visitors ADD COLUMN profile_token VARCHAR(24)")
         if not has_col("visitors", "auto_checked_out"):
             stmts.append("ALTER TABLE visitors ADD COLUMN auto_checked_out BOOLEAN NOT NULL DEFAULT 0")
+    if table_exists("admin_users"):
+        if not has_col("admin_users", "must_change_password"):
+            stmts.append("ALTER TABLE admin_users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT 0")
 
     for stmt in stmts:
         cur.execute(stmt)
@@ -207,6 +311,7 @@ def _seed_defaults(db, app):
     if not AdminUser.query.first():
         admin = AdminUser(username="admin")
         admin.set_password(app.config.get("ADMIN_DEFAULT_PASSWORD", "admin"))
+        admin.must_change_password = True  # force a change on first login
         db.session.add(admin)
 
     # SMTP settings row (id=1)
@@ -237,6 +342,17 @@ def _seed_defaults(db, app):
         ))
 
     db.session.commit()
+
+    # Force a password change for any admin still using the configured default
+    # password (covers older installs seeded with admin/admin before this flag).
+    default_pw = app.config.get("ADMIN_DEFAULT_PASSWORD", "admin")
+    flagged = False
+    for u in AdminUser.query.all():
+        if not u.must_change_password and u.check_password(default_pw):
+            u.must_change_password = True
+            flagged = True
+    if flagged:
+        db.session.commit()
 
     # FR/ES backfill on existing health questions (older installs)
     for key, (tfr, tes) in HQ_FR_ES_BACKFILL.items():

@@ -69,7 +69,9 @@ deploy/setup.sh      Ubuntu-Deployment (gunicorn+systemd, Cron, kein Node); gate
 - **HealthQuestion**: position, text_de/en/fr/es, short_key (unique), active,
   **correct_answer (Bool)** — Sollantwort; Abweichung blockt Check-in. `to_dict()`.
 - **VisitorAnswer**: visitor_id, question_id, answer (Bool).
-- **AdminUser**: username (unique), password_hash (Werkzeug).
+- **AdminUser**: username (unique), password_hash (Werkzeug), must_change_password
+  (Bool — erzwingt Passwortwechsel beim nächsten Login; gesetzt beim Seed, bei
+  Admin-Reset fremder Konten und beim Anlegen neuer Konten).
 - **SmtpSettings**: Single-Row id=1 (Host/Port/User/Passwort/Absender/Empfänger, use_tls, enabled).
 - **AppSettings**: Single-Row id=1 — company_name, logo_path, accent, retention_days,
   kiosk_backdrop, collect_plate, auto_return_seconds, health_intro_de/en/fr/es.
@@ -97,6 +99,9 @@ erfolgtem Check-out ist ein erneuter Check-in am selben Tag wieder möglich.
 
 Admin (Login nötig, Mutationen brauchen `X-CSRFToken`-Header):
 `POST /api/admin/login|logout` · `GET /api/admin/session` ·
+`POST /api/admin/account/password` (eigenes Passwort ändern; solange
+`must_change_password` gesetzt ist, blockt ein `before_request`-Gate alle
+anderen Admin-Endpunkte mit 403 `password_change_required`) ·
 `GET /api/admin/visitors?scope=live|history&from&to&q` ·
 `POST /api/admin/visitors/<id>/checkout` · `DELETE /api/admin/visitors/<id>` ·
 `GET /api/admin/visitors/<id>/signature` ·
@@ -120,8 +125,18 @@ Nicht-`/api`-Pfade liefern die SPA-Shell (`/` + Catch-all). `/uploads/<file>` li
 - **htm-Syntax**: Komponenten schließen mit `<//>`, Interpolation `<${Comp} .../>`.
 - **i18n**: Statische UI-Texte liegen komplett in `i18n.mjs`. Dynamische Inhalte
   (Fragen, Info, Branding) kommen in allen 4 Sprachen vom Server; Client wählt via `pick()`.
-- **Auth/CSRF**: Same-Origin, Flask-Login-Session-Cookie (`SameSite=Lax`, HttpOnly).
+- **Auth/CSRF**: Same-Origin, Flask-Login-Session-Cookie (`SameSite=Lax`, HttpOnly;
+  `Secure` ist in Production default an, abschaltbar via `SESSION_COOKIE_SECURE=0`).
   Admin-Mutationen: Token von `GET /api/csrf` → Header `X-CSRFToken`. `api.mjs` macht das automatisch.
+  Erster Login (Seed/Reset/Neuanlage) erzwingt einen Passwortwechsel (UI-Gate +
+  serverseitiges `before_request`-Gate, min. 8 Zeichen). `setup.sh` generiert ein
+  zufälliges Admin-Passwort (kein admin/admin mehr).
+- **Security-Header/Proxy**: `after_request` setzt CSP (Importmap per SHA-256-Hash
+  gepinnt), `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`. `ProxyFix` mit
+  1 Hop ist aktiv (`PROXY_HOPS` env: 0 = aus bei Direkt-Exposition, 2+ bei CDN-Kette);
+  Rate-Limiter & Audit-IP nutzen `request.remote_addr` — nie X-Forwarded-For parsen.
+  CSV-Exporte escapen Formel-Präfixe (`csv_safe`), PDF escaped Besucherfelder
+  (reportlab-Paragraph parst Markup).
 - **HTTPS/Wake-Lock**: Der iPad-Screen-Wake-Lock braucht HTTPS (über den Reverse-Proxy)
   und `SESSION_COOKIE_SECURE=1`. Ohne HTTPS Guided Access am iPad nutzen.
 - **Besucherausweis (Wiederkommen)**: QR enthält nur den Token (`GKP:<token>`), das

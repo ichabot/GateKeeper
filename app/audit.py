@@ -1,8 +1,8 @@
 """Audit-trail helper."""
 
-from flask import request
 from flask_login import current_user
 
+from app import client_ip
 from app.extensions import db
 
 
@@ -22,15 +22,8 @@ ACTIONS = (
     "user_create",
     "user_password",
     "user_delete",
+    "password_change",
 )
-
-
-def _client_ip() -> str | None:
-    # Honour a single proxy hop if present (user runs their own reverse proxy).
-    fwd = request.headers.get("X-Forwarded-For", "")
-    if fwd:
-        return fwd.split(",")[0].strip()
-    return request.remote_addr
 
 
 def log_audit(action: str, detail: str | None = None, user: str | None = None) -> None:
@@ -45,5 +38,5 @@ def log_audit(action: str, detail: str | None = None, user: str | None = None) -
         except Exception:
             user = None
 
-    entry = AuditLog(action=action, detail=detail, user=user, ip=_client_ip())
+    entry = AuditLog(action=action, detail=detail, user=user, ip=client_ip())
     db.session.add(entry)

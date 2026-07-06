@@ -12,7 +12,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import or_
 from werkzeug.utils import secure_filename
 
-from app import BERLIN_TZ, to_berlin
+from app import BERLIN_TZ, csv_safe, to_berlin, client_ip as _client_ip
 from app.api import iso, logo_url, settings_public, visitor_to_dict
 from app.audit import log_audit
 from app.extensions import db
@@ -26,13 +26,6 @@ _ALLOWED_LOGO_EXT = {".png", ".svg", ".jpg", ".jpeg", ".webp"}
 _login_hits: dict = defaultdict(deque)
 
 
-def _client_ip() -> str:
-    fwd = request.headers.get("X-Forwarded-For", "")
-    if fwd:
-        return fwd.split(",")[0].strip()
-    return request.remote_addr or "?"
-
-
 def _login_rate_limited() -> bool:
     key = _client_ip()
     now = _time.monotonic()
@@ -43,6 +36,27 @@ def _login_rate_limited() -> bool:
         return True
     dq.append(now)
     return False
+
+
+@admin_bp.before_request
+def _enforce_password_change():
+    """Server-side enforcement of the forced first-login password change.
+
+    The SPA gates the UI, but an attacker with default credentials could call
+    the API directly — so while must_change_password is set, every admin
+    endpoint except login/logout/session/password-change is rejected.
+    """
+    if not current_user.is_authenticated:
+        return None  # @login_required handles unauthenticated access
+    if not getattr(current_user, "must_change_password", False):
+        return None
+    allowed = {
+        "api_admin.login", "api_admin.logout",
+        "api_admin.whoami", "api_admin.account_password",
+    }
+    if request.endpoint in allowed:
+        return None
+    return jsonify({"error": "password_change_required"}), 403
 
 
 def _parse_range(from_s, to_s):
@@ -103,7 +117,10 @@ def login():
     login_user(user)
     log_audit("login", user=user.username)
     db.session.commit()
-    return jsonify({"user": {"username": user.username}})
+    return jsonify({"user": {
+        "username": user.username,
+        "must_change_password": user.must_change_password,
+    }})
 
 
 @admin_bp.post("/logout")
@@ -116,8 +133,35 @@ def logout():
 @admin_bp.get("/session")
 def whoami():
     if current_user.is_authenticated:
-        return jsonify({"user": {"username": current_user.username}})
+        return jsonify({"user": {
+            "username": current_user.username,
+            "must_change_password": current_user.must_change_password,
+        }})
     return jsonify({"user": None}), 401
+
+
+@admin_bp.post("/account/password")
+@login_required
+def account_password():
+    """Change the logged-in admin's own password (verifies the current one).
+
+    Also clears the must_change_password flag — this is the endpoint the forced
+    first-login password change uses.
+    """
+    data = request.get_json(silent=True) or {}
+    current = data.get("current_password") or ""
+    new = data.get("new_password") or ""
+    if not current_user.check_password(current):
+        return jsonify({"error": "wrong_current"}), 403
+    if len(new) < 8:
+        return jsonify({"error": "weak_password"}), 400
+    if new == current:
+        return jsonify({"error": "same_password"}), 400
+    current_user.set_password(new)
+    current_user.must_change_password = False
+    log_audit("password_change", detail=current_user.username)
+    db.session.commit()
+    return jsonify({"ok": True})
 
 
 # ===========================================================================
@@ -191,7 +235,8 @@ def _build_csv(visitors_list) -> str:
         arr = to_berlin(v.arrival_time) if v.arrival_time else None
         dep = to_berlin(v.departure_time) if v.departure_time else None
         row = [
-            v.first_name, v.last_name, v.company, v.contact_person, v.license_plate or "",
+            csv_safe(v.first_name), csv_safe(v.last_name), csv_safe(v.company),
+            csv_safe(v.contact_person), csv_safe(v.license_plate or ""),
             arr.strftime("%d.%m.%Y") if arr else "",
             arr.strftime("%H:%M") if arr else "",
             dep.strftime("%H:%M") if dep else "",
@@ -701,13 +746,15 @@ def users_create():
     password = data.get("password") or ""
     if len(username) < 3:
         return jsonify({"error": "bad_username"}), 400
-    if len(password) < 6:
+    if len(password) < 8:
         return jsonify({"error": "weak_password"}), 400
     if AdminUser.query.filter_by(username=username).first():
         return jsonify({"error": "exists"}), 409
 
     u = AdminUser(username=username)
     u.set_password(password)
+    # The creating admin knows this password — the new user must pick their own.
+    u.must_change_password = True
     db.session.add(u)
     log_audit("user_create", detail=username)
     db.session.commit()
@@ -721,12 +768,16 @@ def users_password(uid):
 
     data = request.get_json(silent=True) or {}
     password = data.get("password") or ""
-    if len(password) < 6:
+    if len(password) < 8:
         return jsonify({"error": "weak_password"}), 400
     u = db.session.get(AdminUser, uid)
     if not u:
         return jsonify({"error": "not_found"}), 404
     u.set_password(password)
+    # A reset password is known to the resetting admin — force the target to
+    # choose their own (unless they reset it for themselves).
+    if u.id != current_user.id:
+        u.must_change_password = True
     log_audit("user_password", detail=u.username)
     db.session.commit()
     return jsonify({"ok": True})

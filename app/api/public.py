@@ -10,6 +10,7 @@ from sqlalchemy import func, or_
 
 from app.extensions import db
 from app.api import iso, settings_public
+from app import client_ip as _client_ip
 
 public_bp = Blueprint("api_public", __name__, url_prefix="/api")
 
@@ -28,13 +29,6 @@ def _rate_limited(key: str, limit: int, window: float) -> bool:
         return True
     dq.append(now)
     return False
-
-
-def _client_ip() -> str:
-    fwd = request.headers.get("X-Forwarded-For", "")
-    if fwd:
-        return fwd.split(",")[0].strip()
-    return request.remote_addr or "?"
 
 
 @public_bp.get("/csrf")
@@ -143,8 +137,9 @@ def checkin():
         if bool(raw) != bool(q.correct_answer):
             return jsonify({"error": "health_blocked"}), 422
 
-    # Signature required
-    if not signature.startswith("data:image/") or len(signature) > _SIG_MAX:
+    # Signature required — the kiosk pad always exports PNG, so accept only
+    # data:image/png (rejects e.g. data:image/svg+xml, which could carry markup).
+    if not signature.startswith("data:image/png") or len(signature) > _SIG_MAX:
         return jsonify({"error": "signature_required"}), 400
 
     pin = Visitor.generate_unique_pin()

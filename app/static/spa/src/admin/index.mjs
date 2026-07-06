@@ -66,6 +66,60 @@ function LoginView({ ctx, onLogin }) {
   </div>`;
 }
 
+function ForcePasswordChange({ ctx, onDone }) {
+  const { t } = ctx;
+  const [current, setCurrent] = useState('');
+  const [pw1, setPw1] = useState('');
+  const [pw2, setPw2] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    setError('');
+    if (pw1.length < 8) { setError(t.pwTooShort); return; }
+    if (pw1 !== pw2) { setError(t.pwMismatch); return; }
+    setBusy(true);
+    try {
+      await apiPost('/api/admin/account/password', { current_password: current, new_password: pw1 });
+      onDone();
+    } catch (err) {
+      const code = err && err.data && err.data.error;
+      setError(
+        code === 'wrong_current' ? t.pwWrongCurrent
+          : code === 'same_password' ? t.pwSame
+            : code === 'weak_password' ? t.pwTooShort
+              : t.saveFail,
+      );
+    } finally { setBusy(false); }
+  }
+
+  return html`<div class="gk-login">
+    <form class="gk-login__card gk-anim-in" onSubmit=${submit}>
+      <div class="gk-login__badge"><${Icon} name="badge" size=${15} color="var(--accent)" /> ${t.adminBadge}</div>
+      <h2 style=${{ fontSize: '22px', margin: '0 0 6px' }}>${t.pwChangeTitle}</h2>
+      <p class="gk-muted" style=${{ margin: '0 0 20px' }}>${t.pwChangeSub}</p>
+      <label class="gk-field" style=${{ marginBottom: '14px' }}>
+        <span class="gk-field__label">${t.pwCurrent}</span>
+        <input class="gk-input" type="password" value=${current} autocomplete="current-password"
+          onInput=${(e) => setCurrent(e.target.value)} />
+      </label>
+      <label class="gk-field" style=${{ marginBottom: '14px' }}>
+        <span class="gk-field__label">${t.pwNew}</span>
+        <input class="gk-input" type="password" value=${pw1} autocomplete="new-password"
+          onInput=${(e) => setPw1(e.target.value)} />
+      </label>
+      <label class="gk-field" style=${{ marginBottom: '14px' }}>
+        <span class="gk-field__label">${t.pwConfirm}</span>
+        <input class="gk-input" type="password" value=${pw2} autocomplete="new-password"
+          onInput=${(e) => setPw2(e.target.value)} />
+      </label>
+      ${error ? html`<div class="gk-alert gk-alert--error"><${Icon} name="alert" size=${18} /> ${error}</div>` : null}
+      <button class="gk-btn gk-btn--block" style=${{ marginTop: '18px' }} disabled=${busy} type="submit">${t.pwSaveBtn}</button>
+    </form>
+  </div>`;
+}
+
 export function Admin({ ctx }) {
   const { t, lang, setLang, showToast } = ctx;
   const [authed, setAuthed] = useState(null); // null = checking
@@ -107,6 +161,10 @@ export function Admin({ ctx }) {
 
   if (authed === null) return html`<div class="gk-boot"><div class="gk-spinner"></div></div>`;
   if (!authed) return html`<${LoginView} ctx=${ctx} onLogin=${(u) => { setUser(u); setAuthed(true); }} />`;
+  if (user && user.must_change_password) {
+    return html`<${ForcePasswordChange} ctx=${ctx}
+      onDone=${() => { setUser({ ...user, must_change_password: false }); showToast(t.pwChanged); }} />`;
+  }
 
   const hub = { ctx, showToast, reloadStats, openSig };
   const TabComp = TAB_COMPONENTS[tab] || LiveTab;

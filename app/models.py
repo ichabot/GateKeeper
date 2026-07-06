@@ -1,7 +1,6 @@
 """SQLAlchemy database models for GateKeeper."""
 
 import json
-import random
 import secrets
 from datetime import datetime, timezone
 
@@ -182,7 +181,8 @@ class Visitor(db.Model):
         for digits in (4, 5, 6):
             upper = 10**digits
             for _ in range(200):
-                pin = f"{random.randint(0, upper - 1):0{digits}d}"
+                # secrets, not random: the PIN is the check-out credential.
+                pin = f"{secrets.randbelow(upper):0{digits}d}"
                 if pin not in active_pins:
                     return pin
         raise RuntimeError("Unable to generate unique PIN — too many active visitors")
@@ -227,6 +227,10 @@ class VisitorProfile(db.Model):
     def generate_token(cls) -> str:
         for _ in range(50):
             tok = "".join(secrets.choice(cls._ALPHABET) for _ in range(10))
+            # Checkout routes all-digit codes to the PIN lookup — skip the rare
+            # purely numeric token so a hand-typed pass code always resolves.
+            if tok.isdigit():
+                continue
             if not cls.query.filter_by(token=tok).first():
                 return tok
         raise RuntimeError("Unable to generate unique profile token")
@@ -255,6 +259,9 @@ class AdminUser(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
+    # Forces a password change on next login (set for the seeded default admin
+    # and any account still using the configured default password).
+    must_change_password = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(
         db.DateTime(timezone=True),
         nullable=False,

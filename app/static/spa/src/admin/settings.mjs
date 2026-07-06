@@ -319,7 +319,7 @@ function Users({ hub }) {
   useEffect(() => { load(); }, []);
 
   async function create() {
-    if (nu.trim().length < 3 || np.length < 6) { showToast(t.userValidation); return; }
+    if (nu.trim().length < 3 || np.length < 8) { showToast(t.userValidation); return; }
     setBusy(true);
     try {
       await apiPost('/api/admin/users', { username: nu.trim(), password: np });
@@ -331,7 +331,7 @@ function Users({ hub }) {
   }
 
   async function doReset(u) {
-    if (resetPw.length < 6) { showToast(t.userValidation); return; }
+    if (resetPw.length < 8) { showToast(t.userValidation); return; }
     setBusy(true);
     try {
       await apiPut(`/api/admin/users/${u.id}/password`, { password: resetPw });

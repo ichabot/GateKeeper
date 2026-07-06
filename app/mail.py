@@ -10,7 +10,7 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-from app import BERLIN_TZ, to_berlin
+from app import BERLIN_TZ, csv_safe, to_berlin
 
 
 def _fmt_berlin(dt):
@@ -157,8 +157,8 @@ def build_monthly_csv(year: int, month: int) -> tuple[str, int]:
 
     for v in visitors:
         row = [
-            v.first_name, v.last_name, v.company, v.contact_person,
-            v.license_plate or "",
+            csv_safe(v.first_name), csv_safe(v.last_name), csv_safe(v.company),
+            csv_safe(v.contact_person), csv_safe(v.license_plate or ""),
             _fmt_berlin(v.arrival_time) if v.arrival_time else "",
             _fmt_berlin(v.departure_time) if v.departure_time else "",
             "Vor Ort" if v.is_on_site else "Abgereist",
