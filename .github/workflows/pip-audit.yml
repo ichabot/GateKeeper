@@ -1,0 +1,35 @@
+name: pip-audit
+
+# Supply-chain check: fail the build if any pinned dependency has a known
+# vulnerability. Runs on dependency changes, on every PR, and weekly so newly
+# disclosed CVEs surface even without a code change.
+on:
+  push:
+    branches: [main]
+    paths:
+      - requirements.txt
+      - requirements.in
+      - .github/workflows/pip-audit.yml
+  pull_request:
+    paths:
+      - requirements.txt
+      - requirements.in
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pip-audit
+        run: python -m pip install --upgrade pip-audit
+      - name: Audit pinned dependencies
+        run: pip-audit -r requirements.txt --strict --desc

@@ -1,10 +1,31 @@
-Flask>=3.0
-Flask-SQLAlchemy>=3.1
-Flask-Login>=0.6
-Flask-WTF>=1.2
-python-dotenv>=1.0
-gunicorn>=21.0
-Werkzeug>=3.0
-reportlab>=4.0
-qrcode>=7.4
-Pillow>=10.0
+# GateKeeper runtime dependencies — PINNED LOCK. Do not edit by hand.
+#
+# Source of truth is requirements.in (direct deps only). To update:
+#   uv pip compile requirements.in --python-platform linux --python-version 3.14 \
+#       --no-header --no-annotate -o requirements.txt
+#   pip-audit -r requirements.txt        # must report 0 vulnerabilities
+#
+# Exact pins (not >=) so `pip install` can never pull a newer — potentially
+# compromised — release without a reviewed, re-audited change to this file.
+# All versions below audited clean with pip-audit (see .github/workflows/pip-audit.yml).
+blinker==1.9.0
+charset-normalizer==3.4.7
+click==8.4.2
+flask==3.1.3
+flask-login==0.6.3
+flask-sqlalchemy==3.1.1
+flask-wtf==1.3.0
+greenlet==3.5.3
+gunicorn==26.0.0
+itsdangerous==2.2.0
+jinja2==3.1.6
+markupsafe==3.0.3
+packaging==26.2
+pillow==12.3.0
+python-dotenv==1.2.2
+qrcode==8.2
+reportlab==5.0.0
+sqlalchemy==2.0.51
+typing-extensions==4.16.0
+werkzeug==3.1.8
+wtforms==3.2.2

@@ -1,0 +1,15 @@
+# Direct runtime dependencies (human-edited source).
+# After editing, regenerate the pinned requirements.txt:
+#   uv pip compile requirements.in -c <freeze> \
+#       --python-platform linux --python-version 3.14 -o requirements.txt
+# then re-audit:  pip-audit -r requirements.txt
+Flask>=3.0
+Flask-SQLAlchemy>=3.1
+Flask-Login>=0.6
+Flask-WTF>=1.2
+python-dotenv>=1.0
+gunicorn>=21.0
+Werkzeug>=3.0
+reportlab>=4.0
+qrcode>=7.4
+Pillow>=10.0
