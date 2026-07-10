@@ -12,10 +12,17 @@ function buildQuery(scope, f) {
   return p.toString();
 }
 
+// Erster Tag des laufenden Monats als YYYY-MM-DD (Default fuer den "von"-Filter,
+// damit die History nicht ueber viele Monate laden muss).
+function firstOfThisMonth() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+}
+
 export function HistoryTab({ hub }) {
   const { ctx, showToast, reloadStats, openSig } = hub;
   const { t, lang } = ctx;
-  const [f, setF] = useState({ q: '', from: '', to: '' });
+  const [f, setF] = useState({ q: '', from: firstOfThisMonth(), to: '' });
   const [rows, setRows] = useState(null);
 
   useEffect(() => {

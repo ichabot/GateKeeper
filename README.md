@@ -15,6 +15,7 @@ oversight, reporting, and GDPR tooling.
 
 ### Kiosk (visitor self-service)
 - **Guided check-in** — name, company, host, optional license plate, digital signature, GDPR consent.
+- **Duplicate-check-in guard** — the same person can't check in twice while still on site; a re-visit is allowed after check-out.
 - **Health questionnaire** — admin-configurable yes/no questions. Each question has an expected answer; a deviation blocks check-in.
 - **PIN check-out** — a short PIN is issued at check-in; visitors check out on a touch numpad.
 - **Returning-visitor pass** — opt-in. Stores only master data (never health answers) behind a QR token. On the next visit the kiosk scans it to pre-fill the form, and the visitor can **check out by scanning the pass** instead of typing the PIN.
@@ -90,15 +91,14 @@ Dev server at **http://localhost:5000** (the SQLite DB is created automatically 
 
 ### Default admin
 
-Open the app and tap the **shield icon** (top-right) to sign in.
+Open the app and tap the **shield icon** (top-right) to sign in with username `admin`.
 
-| | |
-|---|---|
-| Username | `admin` |
-| Password | `admin` |
+- **Production (`setup.sh`)** — a **random** admin password is generated and printed at the
+  end of the install (also stored as `ADMIN_DEFAULT_PASSWORD` in `.env`).
+- **Development** — the default password is `admin`.
 
-Change it immediately in **Admin → Settings → Users**, where you can also
-add, delete, and reset passwords for admin accounts.
+On the **first login you're required to set your own password** (min. 8 characters). Add,
+delete, and reset admin accounts anytime in **Admin → Settings → Users**.
 
 **Recovery only** — if you're locked out (forgot the password), reset it from
 the server:
