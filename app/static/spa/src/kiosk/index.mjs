@@ -589,7 +589,7 @@ export function Kiosk({ ctx, initialPin }) {
       onClose=${() => idleBump.current()}>
       <p style=${{ margin: '0 0 6px', fontSize: '16px' }}>${t.idleMsg}</p>
       <div style=${{ fontSize: '42px', fontWeight: 800, textAlign: 'center', margin: '4px 0 14px' }}>${idleLeft}</div>
-      <div class="gk-actions">
+      <div class="gk-actions" style=${{ justifyContent: 'center' }}>
         <button class="gk-btn gk-btn--lg" onClick=${() => idleBump.current()}>${t.idleStay}</button>
       </div>
     <//>
