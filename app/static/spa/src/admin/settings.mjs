@@ -26,7 +26,7 @@ export function SettingsTab({ hub }) {
   const [sub, setSub] = useState('mail');
   const [loaded, setLoaded] = useState(false);
   const [branding, setBranding] = useState({ company_name: '', logo_url: '', accent: 'blau' });
-  const [kiosk, setKiosk] = useState({ kiosk_backdrop: 'hell', collect_plate: true, auto_return_seconds: 20 });
+  const [kiosk, setKiosk] = useState({ kiosk_backdrop: 'hell', collect_plate: true, auto_return_seconds: 20, idle_timeout_seconds: 120 });
   const [privacy, setPrivacy] = useState({ retention_days: 90 });
   const [smtp, setSmtp] = useState({ smtp_host: '', smtp_port: 587, smtp_user: '', smtp_sender: '', smtp_recipients: '', emergency_recipients: '', use_tls: true, enabled: false, password_set: false });
   const [smtpPassword, setSmtpPassword] = useState('');
@@ -48,6 +48,7 @@ export function SettingsTab({ hub }) {
         kiosk: {
           kiosk_backdrop: kiosk.kiosk_backdrop, collect_plate: kiosk.collect_plate,
           auto_return_seconds: Number(kiosk.auto_return_seconds) || 20,
+          idle_timeout_seconds: Number(kiosk.idle_timeout_seconds) || 120,
         },
         privacy: { retention_days: Number(privacy.retention_days) || 90 },
         smtp: {
@@ -180,6 +181,7 @@ export function SettingsTab({ hub }) {
         <${Switch} checked=${kiosk.collect_plate} onChange=${(v) => setKiosk({ ...kiosk, collect_plate: v })} label=${t.fldPlate} />
       </div>
       ${field(t.fldAutoReturn, kiosk.auto_return_seconds, (v) => setKiosk({ ...kiosk, auto_return_seconds: v }), { type: 'number' })}
+      ${field(t.fldIdleTimeout, kiosk.idle_timeout_seconds, (v) => setKiosk({ ...kiosk, idle_timeout_seconds: v }), { type: 'number' })}
       <div class="gk-actions"><button class="gk-btn" disabled=${busy} onClick=${save}>${t.save}</button></div>
     </div>`;
   } else if (sub === 'users') {

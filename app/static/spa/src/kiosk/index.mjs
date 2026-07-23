@@ -7,6 +7,13 @@ import { apiPost } from '../api.mjs';
 import { enableWakeLock, disableWakeLock } from '../wakeLock.mjs';
 import { QrScanner, cameraSupported } from '../scan.mjs';
 
+// Screens where the visitor is mid-flow: after a while without interaction we
+// return to the welcome screen (which clears any half-entered data). A short
+// "still there?" prompt shows in the final IDLE_WARN_AT seconds. Welcome, the
+// done/confirmation screens (own countdown) and the info pages are excluded.
+const IDLE_SCREENS = ['data', 'health', 'consent', 'sign', 'cocode', 'return'];
+const IDLE_WARN_AT = 20;
+
 function fmtDur(min) {
   const m = Math.max(0, Math.round(min));
   const h = Math.floor(m / 60);
@@ -49,6 +56,7 @@ export function Kiosk({ ctx, initialPin }) {
   const [pin, setPin] = useState('');
   const [greet, setGreet] = useState('');
   const [autoSec, setAutoSec] = useState(0);
+  const [idleLeft, setIdleLeft] = useState(0);
   const [coCode, setCoCode] = useState(initialPin || '');
   const [coError, setCoError] = useState(false);
   const [coScan, setCoScan] = useState(false);   // checkout: camera opened on demand
@@ -69,10 +77,38 @@ export function Kiosk({ ctx, initialPin }) {
   const drawing = useRef(false);
   const pen = useRef(null);
   const autoTimer = useRef(null);
+  const idleTimer = useRef(null);
+  const idleBump = useRef(() => {});
 
   // Keep the device awake while the kiosk is on screen.
   useEffect(() => { enableWakeLock(); return () => disableWakeLock(); }, []);
   useEffect(() => () => clearInterval(autoTimer.current), []);
+
+  // Inactivity guard on mid-flow screens: return to the start after
+  // idle_timeout_seconds of no interaction (short warning in the final
+  // IDLE_WARN_AT seconds). Any tap/keypress restarts the countdown; goWelcome()
+  // also clears the half-entered form.
+  useEffect(() => {
+    if (!IDLE_SCREENS.includes(screen)) { clearInterval(idleTimer.current); setIdleLeft(0); return undefined; }
+    const total = Math.max(30, Math.min(600, parseInt(s.idle_timeout_seconds, 10) || 120));
+    let left = total;
+    setIdleLeft(total);
+    const reset = () => { left = total; setIdleLeft(total); };
+    idleBump.current = reset;
+    idleTimer.current = setInterval(() => {
+      left -= 1;
+      if (left <= 0) { clearInterval(idleTimer.current); setIdleLeft(0); goWelcome(); return; }
+      setIdleLeft(left);
+    }, 1000);
+    const opts = { passive: true };
+    window.addEventListener('pointerdown', reset, opts);
+    window.addEventListener('keydown', reset, opts);
+    return () => {
+      clearInterval(idleTimer.current);
+      window.removeEventListener('pointerdown', reset, opts);
+      window.removeEventListener('keydown', reset, opts);
+    };
+  }, [screen, s.idle_timeout_seconds]);
 
   const setField = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -546,6 +582,16 @@ export function Kiosk({ ctx, initialPin }) {
       title=${modalCat ? pick(modalCat.title, lang) : ''} closeLabel=${t.closeBtn}
       icon=${modalCat ? html`<${Icon} name=${modalCat.icon} size=${22} color=${modalCat.accent} />` : null}>
       <${InfoContent} cat=${modalCat} lang=${lang} />
+    <//>
+    <${Modal} open=${idleLeft > 0 && idleLeft <= IDLE_WARN_AT}
+      title=${t.idleTitle} closeLabel=${t.idleStay}
+      icon=${html`<${Icon} name="alert" size=${22} color="var(--accent)" />`}
+      onClose=${() => idleBump.current()}>
+      <p style=${{ margin: '0 0 6px', fontSize: '16px' }}>${t.idleMsg}</p>
+      <div style=${{ fontSize: '42px', fontWeight: 800, textAlign: 'center', margin: '4px 0 14px' }}>${idleLeft}</div>
+      <div class="gk-actions">
+        <button class="gk-btn gk-btn--lg" onClick=${() => idleBump.current()}>${t.idleStay}</button>
+      </div>
     <//>
   </div>`;
 }

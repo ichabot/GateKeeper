@@ -253,6 +253,9 @@ def _run_migrations(db):
     if table_exists("admin_users"):
         if not has_col("admin_users", "must_change_password"):
             stmts.append("ALTER TABLE admin_users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT 0")
+    if table_exists("app_settings"):
+        if not has_col("app_settings", "idle_timeout_seconds"):
+            stmts.append("ALTER TABLE app_settings ADD COLUMN idle_timeout_seconds INTEGER NOT NULL DEFAULT 120")
 
     for stmt in stmts:
         cur.execute(stmt)
@@ -337,6 +340,7 @@ def _seed_defaults(db, app):
             kiosk_backdrop=DEFAULT_SETTINGS["kiosk_backdrop"],
             collect_plate=DEFAULT_SETTINGS["collect_plate"],
             auto_return_seconds=DEFAULT_SETTINGS["auto_return_seconds"],
+            idle_timeout_seconds=DEFAULT_SETTINGS["idle_timeout_seconds"],
             health_intro_de=HEALTH_INTRO["de"], health_intro_en=HEALTH_INTRO["en"],
             health_intro_fr=HEALTH_INTRO["fr"], health_intro_es=HEALTH_INTRO["es"],
         ))

@@ -503,6 +503,7 @@ def settings_get():
             "kiosk_backdrop": s.kiosk_backdrop if s else "hell",
             "collect_plate": s.collect_plate if s else True,
             "auto_return_seconds": s.auto_return_seconds if s else 20,
+            "idle_timeout_seconds": s.idle_timeout_seconds if s else 120,
         },
         "privacy": {"retention_days": s.retention_days if s else 90},
         "smtp": {
@@ -548,6 +549,11 @@ def settings_put():
         if "auto_return_seconds" in kiosk:
             try:
                 s.auto_return_seconds = max(5, min(60, int(kiosk["auto_return_seconds"])))
+            except (TypeError, ValueError):
+                pass
+        if "idle_timeout_seconds" in kiosk:
+            try:
+                s.idle_timeout_seconds = max(30, min(600, int(kiosk["idle_timeout_seconds"])))
             except (TypeError, ValueError):
                 pass
         if "retention_days" in privacy:

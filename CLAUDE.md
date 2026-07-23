@@ -74,7 +74,8 @@ deploy/setup.sh      Ubuntu-Deployment (gunicorn+systemd, Cron, kein Node); gate
   Admin-Reset fremder Konten und beim Anlegen neuer Konten).
 - **SmtpSettings**: Single-Row id=1 (Host/Port/User/Passwort/Absender/Empfänger, use_tls, enabled).
 - **AppSettings**: Single-Row id=1 — company_name, logo_path, accent, retention_days,
-  kiosk_backdrop, collect_plate, auto_return_seconds, health_intro_de/en/fr/es.
+  kiosk_backdrop, collect_plate, auto_return_seconds, idle_timeout_seconds
+  (Inaktivitäts-Timeout im Kiosk → zurück zum Start), health_intro_de/en/fr/es.
 - **AuditLog**: created_at, action (Code), detail, user, ip.
 - **InfoCategory**: key, type ('dir'|'art'), icon, accent, position, title_*, body_*
   (Markdown, für 'art'), entries_json ([{label:{..},value}], für 'dir'). `to_dict()`, `entries`-Property.

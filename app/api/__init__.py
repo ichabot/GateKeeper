@@ -48,6 +48,7 @@ def settings_public(settings) -> dict:
         "kiosk_backdrop": settings.kiosk_backdrop,
         "collect_plate": settings.collect_plate,
         "auto_return_seconds": settings.auto_return_seconds,
+        "idle_timeout_seconds": settings.idle_timeout_seconds,
     }
 
 

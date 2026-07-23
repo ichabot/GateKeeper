@@ -64,6 +64,7 @@ DEFAULT_SETTINGS = {
     "kiosk_backdrop": "hell",
     "collect_plate": True,
     "auto_return_seconds": 20,
+    "idle_timeout_seconds": 120,
 }
 
 # --- Accent palettes (mirror of the frontend theme.mjs) --------------------

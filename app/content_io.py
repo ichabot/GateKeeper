@@ -31,6 +31,7 @@ def export_content(include_logo: bool = True) -> dict:
         "kiosk_backdrop": s.kiosk_backdrop if s else "hell",
         "collect_plate": s.collect_plate if s else True,
         "auto_return_seconds": s.auto_return_seconds if s else 20,
+        "idle_timeout_seconds": s.idle_timeout_seconds if s else 120,
         "retention_days": s.retention_days if s else 90,
     }
 
@@ -117,7 +118,7 @@ def import_content(data: dict, mode: str = "replace", preview: bool = False) -> 
                     if getattr(s, key) != bool(branding[key]):
                         setattr(s, key, bool(branding[key]))
                         changed += 1
-        for key in ("auto_return_seconds", "retention_days"):
+        for key in ("auto_return_seconds", "idle_timeout_seconds", "retention_days"):
             if key in branding and isinstance(branding[key], int):
                 if mode == "replace" and getattr(s, key) != branding[key]:
                     setattr(s, key, branding[key])

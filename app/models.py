@@ -343,6 +343,9 @@ class AppSettings(db.Model):
     kiosk_backdrop = db.Column(db.String(20), nullable=False, default="hell")  # hell/anthrazit/schlicht
     collect_plate = db.Column(db.Boolean, nullable=False, default=True)
     auto_return_seconds = db.Column(db.Integer, nullable=False, default=20)
+    # Inactivity timeout on a mid-flow screen before returning to the start
+    # (clears any half-entered data). Clamped 30..600 in the settings API.
+    idle_timeout_seconds = db.Column(db.Integer, nullable=False, default=120)
     # Questionnaire intro text per language
     health_intro_de = db.Column(db.Text, nullable=False, default="")
     health_intro_en = db.Column(db.Text, nullable=False, default="")
