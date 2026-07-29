@@ -72,8 +72,11 @@ export function QrScanner({ onResult }) {
       if (stopped) return;
       if (!jsQR) { setErr('lib'); return; }
       try {
+        // Front ("user") camera: the kiosk iPad faces the visitor, so the
+        // selfie camera sees the pass QR the visitor holds up. 'ideal' keeps it
+        // working on single-camera devices too.
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' } },
+          video: { facingMode: { ideal: 'user' } },
         });
       } catch (_) {
         setErr('cam');
